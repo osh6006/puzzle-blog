@@ -6,9 +6,11 @@ export default async function Home() {
   const categoryList = await getCategoryList();
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+    <main className="flex min-h-screen flex-col items-center justify-between">
       <Header />
+      {/* CategoryList */}
       {/* PostList */}
+      <div className="">Contents</div>
       <Footer />
     </main>
   );
