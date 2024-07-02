@@ -1,3 +1,5 @@
+import Header from "@/components/layouts/header";
+import Footer from "@/components/layouts/footer";
 import { getCategoryList } from "@/lib/blog";
 
 export default async function Home() {
@@ -5,7 +7,9 @@ export default async function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      홈 페이지 입니다!
+      <Header />
+      {/* PostList */}
+      <Footer />
     </main>
   );
 }
