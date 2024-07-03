@@ -13,7 +13,7 @@ const Layout: React.FunctionComponent<ILayoutProps> = ({
 }) => {
   return (
     <main
-      className={cn("pt-[55px] w-full h-full flex-grow px-4 pb-8", className)}
+      className={cn("pt-[55px] w-full h-full flex-grow px-4 my-8", className)}
     >
       <Inner>{children}</Inner>
     </main>

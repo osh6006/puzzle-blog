@@ -2,14 +2,15 @@ import Heading from "@/components/common/heading";
 import PostSkeleton from "@/components/common/post-skeleton";
 import NewPosts from "@/components/home/new-posts";
 import Layout from "@/components/layouts/layout";
-import { PuzzleIcon } from "lucide-react";
+import { MoveRightIcon, PuzzleIcon } from "lucide-react";
+import Link from "next/link";
 import { Suspense } from "react";
 
 export default async function Home() {
   return (
     <>
       <Layout>
-        <div className="flex items-center gap-x-2 mt-10">
+        <div className="flex items-center gap-x-2">
           <Heading as="h1" className="text-3xl sm:text-4xl  font-semibold ">
             프론트엔드 퍼즐 맞추기
           </Heading>
@@ -23,9 +24,18 @@ export default async function Home() {
           만들었습니다.
         </p>
 
-        <Heading as="h2" className="text-2xl sm:text-3xl font-semibold my-4">
-          새로 올라온 글
-        </Heading>
+        <div className="w-full flex items-center justify-between">
+          <Heading as="h2" className="text-2xl sm:text-3xl font-semibold my-4">
+            새로 올라온 글
+          </Heading>
+          <Link
+            href="/blog"
+            className="flex gap-x-2 text-lg hover:text-primary transition hover:-translate-x-2"
+          >
+            모두 보러 가기
+            <MoveRightIcon />
+          </Link>
+        </div>
         <Suspense fallback={<PostSkeleton />}>
           <NewPosts />
         </Suspense>
