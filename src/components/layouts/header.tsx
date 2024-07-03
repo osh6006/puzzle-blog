@@ -9,7 +9,7 @@ import Nav from "../header/nav";
 
 function Header() {
   return (
-    <header className="fixed flex w-full h-[55px] border-b items-center justify-center shadow-sm shadow-blue-50 z-20 px-4">
+    <header className="fixed flex w-full h-[55px] border-b items-center justify-center shadow-sm bg-white shadow-blue-50 z-20 px-4">
       <div className="w-full flex items-center justify-between max-w-5xl gap-x-4 ">
         <div className="flex items-center gap-x-4">
           <Logo text="Puzzle" />

@@ -1,6 +1,6 @@
 import Heading from "@/components/common/heading";
 import PostSkeleton from "@/components/common/post-skeleton";
-import NewPosts from "@/components/home/new-posts";
+import NewPostList from "@/components/home/new-post-list";
 import Layout from "@/components/layouts/layout";
 import { MoveRightIcon, PuzzleIcon } from "lucide-react";
 import Link from "next/link";
@@ -17,7 +17,7 @@ export default async function Home() {
           <PuzzleIcon className="text-primary" size={28} />
         </div>
         <p className="text-lg mt-6 font-light">
-          안녕하세요 프론트엔드를 한 조각 한 조각씩 맞춰가고 있는 중입니다.
+          프론트엔드 라는 퍼즐을 한 조각 한 조각씩 맞춰가고 있는 중입니다.
         </p>
         <p className="text-lg font-light">
           이 블로그는 프론트엔드 개발 여정을 기록하고, 배운 것들을 공유하기 위해
@@ -37,7 +37,7 @@ export default async function Home() {
           </Link>
         </div>
         <Suspense fallback={<PostSkeleton />}>
-          <NewPosts />
+          <NewPostList />
         </Suspense>
       </Layout>
     </>
