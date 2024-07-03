@@ -5,12 +5,13 @@ import Link from "next/link";
 
 import { GemIcon } from "lucide-react";
 import { Button } from "../ui/button";
-import Nav from "../header/nav";
+import Nav from "@/components/header/nav";
+import Inner from "@/components/layouts/inner";
 
 function Header() {
   return (
     <header className="fixed flex w-full h-[55px] border-b items-center justify-center shadow-sm bg-white shadow-blue-50 z-20 px-4">
-      <div className="w-full flex items-center justify-between max-w-5xl gap-x-4 ">
+      <Inner className="w-full flex items-center justify-between max-w-6xl gap-x-4 ">
         <div className="flex items-center gap-x-4">
           <Logo text="Puzzle" />
           <Nav />
@@ -24,7 +25,7 @@ function Header() {
             </Button>
           </Link>
         </div>
-      </div>
+      </Inner>
     </header>
   );
 }

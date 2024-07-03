@@ -1,7 +1,6 @@
 import Filter from "@/components/blog/filter";
 import FilteredPostList from "@/components/blog/filtered-post-list";
-import PostList from "@/components/layouts/post-list";
-import { getCategoryList, getPostList } from "@/lib/blog";
+import { getCategoryList } from "@/lib/blog";
 
 export default async function BlogPage({
   searchParams,

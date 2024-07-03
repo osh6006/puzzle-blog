@@ -17,7 +17,7 @@ const FilteredPostList: React.FunctionComponent<
     <ul className="w-full grid grid-cols-1 gap-4 mt-8 sm:grid-cols-2 lg:grid-cols-3">
       <PostList
         items={filteredPostList}
-        renderItem={(item, index) => (
+        renderItem={(item) => (
           <li key={item.title + item.date}>
             <Link href={item.url}>
               <PostCard date={item.dateString} title={item.title} />

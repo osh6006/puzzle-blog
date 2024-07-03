@@ -11,6 +11,7 @@
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-tabs": "^1.1.0",
+    "@rehype-pretty/transformers": "^0.13.2",
     "@types/glob": "^8.1.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
@@ -23,10 +24,17 @@
     "react": "^18",
     "react-dom": "^18",
     "reading-time": "^1.5.0",
+    "rehype-pretty-code": "^0.13.2",
+    "rehype-slug": "^6.0.0",
+    "remark-breaks": "^4.0.0",
+    "remark-gfm": "^4.0.0",
+    "shiki": "^1.10.1",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@fec/remark-a11y-emoji": "^4.0.2",
+    "@tailwindcss/typography": "^0.5.13",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

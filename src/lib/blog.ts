@@ -20,15 +20,13 @@ export const parsePostAbstract = (postPath: string) => {
 
   // /blog/category1/title1
   const url = `/blog/${category}/${slug}`;
-
   return { url, category, slug };
 };
 
 // 하나의 글에 대한 머리글과 콘텐츠 반환
-const parsePost = async (postPath: string): Promise<IPOST> => {
+export const parsePost = async (postPath: string): Promise<IPOST> => {
   const postAbstract = parsePostAbstract(postPath);
   const postDetail = await parsePostDetail(postPath);
-
   return { ...postAbstract, ...postDetail } as IPOST;
 };
 
@@ -72,7 +70,7 @@ export const getCategoryList = async (): Promise<(string | undefined)[]> => {
   return categoryList;
 };
 
-// 모든 카테고리 조회 후 날짜순으로 정렬
+// 모든 포스트 조회 후 날짜순으로 정렬
 export const getNewPosts = async (): Promise<IPOST[]> => {
   const allPosts = await getPostList();
   const newPosts = allPosts.sort((a, b) => b.date.getTime() - a.date.getTime());

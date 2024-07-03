@@ -2,7 +2,7 @@ import Heading from "@/components/common/heading";
 import PostSkeleton from "@/components/common/post-skeleton";
 import NewPostList from "@/components/home/new-post-list";
 import Layout from "@/components/layouts/layout";
-import { MoveRightIcon, PuzzleIcon } from "lucide-react";
+import { LeafIcon, MoveRightIcon, PuzzleIcon } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -25,8 +25,12 @@ export default async function Home() {
         </p>
 
         <div className="w-full flex items-center justify-between">
-          <Heading as="h2" className="text-2xl sm:text-3xl font-semibold my-4">
+          <Heading
+            as="h2"
+            className="text-2xl items-center flex gap-x-2 sm:text-3xl font-semibold my-4"
+          >
             새로 올라온 글
+            <LeafIcon className="text-lime-500" />
           </Heading>
           <Link
             href="/blog"
