@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import Header from "@/components/layouts/header";
+import Footer from "@/components/layouts/footer";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -21,7 +24,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={pretendard.className}>{children}</body>
+      <body className={cn("flex min-h-dvh flex-col", pretendard.className)}>
+        <Header />
+        {children}
+        <Footer />
+      </body>
     </html>
   );
 }
