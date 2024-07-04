@@ -40,9 +40,11 @@ export default async function Home() {
             <MoveRightIcon />
           </Link>
         </div>
-        <Suspense fallback={<PostSkeleton />}>
-          <NewPostList />
-        </Suspense>
+        <section className="h-fit">
+          <Suspense fallback={<PostSkeleton />}>
+            <NewPostList />
+          </Suspense>
+        </section>
       </Layout>
     </>
   );

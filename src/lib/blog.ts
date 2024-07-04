@@ -2,7 +2,7 @@ import fs from "fs";
 import dayjs from "dayjs";
 import { sync } from "glob";
 import matter from "gray-matter";
-import { IPost } from "@/types/blog";
+import { HeadingItem, IPost } from "@/types/blog";
 import { BASE_PATH, POSTS_PATH } from "@/constants/blog";
 import readingTime from "reading-time";
 
@@ -81,5 +81,26 @@ export const getCategoryList = async (): Promise<(string | undefined)[]> => {
 export const getNewPosts = async (): Promise<IPost[]> => {
   const allPosts = await getPostList();
   const newPosts = allPosts.sort((a, b) => b.date.getTime() - a.date.getTime());
-  return newPosts;
+  return newPosts.filter((_, i) => i <= 10);
+};
+
+// 테이블에 있는 헤딩
+export const parseIndex = (content: string): HeadingItem[] => {
+  const regex = /^(##|###) (.*$)/gim;
+  const headingList = content.match(regex);
+  return (
+    headingList?.map((heading: string) => ({
+      text: heading.replace("##", "").replace("#", ""),
+      link:
+        "#" +
+        heading
+          .replace("# ", "")
+          .replace("#", "")
+          .replace(/[\[\]:!@#$/%^&*()+=,.]/g, "")
+          .replace(/ /g, "-")
+          .toLowerCase()
+          .replace("?", ""),
+      indent: (heading.match(/#/g)?.length || 2) - 2,
+    })) || []
+  );
 };

@@ -16,31 +16,32 @@ const BlogHeader: React.FunctionComponent<IBlogHeaderProps> = ({
   thumbnail,
   lastmod,
 }) => {
-  console.log(thumbnail);
-
   return (
-    <div className="flex w-full items-center relative justify-center max-w-2xl mx-auto flex-col">
+    <section className="flex flex-col w-full items-center relative justify-center mx-auto">
       <h1 className="text-3xl font-bold break-keep tracking-tight sm:text-4xl mx-auto max-w-3xl text-center">
         {title}
       </h1>
-      <div className="text-lg font-semibold text-primary uppercase mt-4">
+
+      <div className="text-lg font-semibold text-primary uppercase ">
         {category}
       </div>
-      <div className="w-full text-sm md:text-base  my-2 flex justify-start text-muted-foreground">
-        <span>
-          작성 일 <time className="font-semibold">{dateString}</time>
+      <div className="w-full text-sm md:text-base  my-2 flex justify-center text-muted-foreground">
+        <span className="text-sm">
+          작성 • <time className="font-semibold text-base">{dateString}</time>
         </span>
-        <span className="before:content-['•'] before:px-[0.25rem]">
-          수정 일 <time className="font-semibold ">{lastmod}</time>
+        <span className="before:content-[''] text-sm before:px-[0.25rem]">
+          수정 • <time className="font-semibold text-base">{lastmod}</time>
         </span>
       </div>
       {thumbnail ? (
-        <div className="relative rounded-md overflow-hidden w-full h-[350px]">
+        <div className="relative rounded-md overflow-hidden">
           <Image
             alt="thumbnail"
             src={thumbnail}
-            fill
-            className="aspect-video"
+            width={750}
+            height={350}
+            className="w-full h-[350px] aspect-video"
+            unoptimized
           />
         </div>
       ) : (
@@ -56,7 +57,7 @@ const BlogHeader: React.FunctionComponent<IBlogHeaderProps> = ({
           <time className="font-bold">{readingMinutes} min read</time>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

@@ -1,8 +1,9 @@
 ---
-title: "Next.js 블로그 만들기 (14.1 최신 버전 + tailwind)"
-date: 2024-03-01
-desc: FE 개발자라면 티스토리 말고 개인 블로그 하나쯤은,,
-thumbnail: /posts/nextjs_blog/setup/thumbnail.jpg
+title: "블로그 mdx 작성법!"
+date: 2024-07-01
+lastmod: 2024-07-03
+author: ohs6006
+thumbnail: ""
 ---
 
 # H1 입니다.
@@ -15,9 +16,9 @@ thumbnail: /posts/nextjs_blog/setup/thumbnail.jpg
 
 ##### H5 입니다.
 
-그냥 글 입니다.
+평범한 글 입니다.
 
-![키키키 입니다.](https://enjoydev.life/posts/12-suspense-errorboundary/240304-055427.png)
+![테스트 이미지 입니다](이미지경로)
 
 [링크 입니다.]()
 
@@ -50,3 +51,9 @@ thumbnail: /posts/nextjs_blog/setup/thumbnail.jpg
 - 목록3
 
 ---
+
+```js title="" caption=""
+// 코드
+```
+
+`인라인 코드 {:js}`

@@ -11,7 +11,7 @@ const AlternativeThumbnail: React.FunctionComponent<
   return (
     <div
       className={cn(
-        "w-full max-w-2xl items-center justify-center flex bg-gray-200 h-[350px] rounded-md",
+        "w-full items-center justify-center flex bg-gray-200 h-[350px] rounded-md",
         className
       )}
     >

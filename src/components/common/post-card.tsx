@@ -13,15 +13,17 @@ interface IPostCardProps {
   title: string;
   date: string;
   imageUrl?: string;
+  category: string;
 }
 
 const PostCard: React.FunctionComponent<IPostCardProps> = ({
   date,
   title,
   imageUrl,
+  category,
 }) => {
   return (
-    <Card className=" cursor-pointer group hover:bg-primary-foreground transition-colors rounded-lg overflow-hidden">
+    <Card className="flex  h-full flex-col cursor-pointer group hover:shadow-md hover:bg-primary-foreground transition-colors rounded-lg overflow-hidden ">
       <CardHeader className="relative min-h-[200px]">
         {imageUrl ? (
           <Image
@@ -38,10 +40,11 @@ const PostCard: React.FunctionComponent<IPostCardProps> = ({
           </div>
         )}
       </CardHeader>
-      <CardContent className="mt-4">
+      <CardContent className="mt-4 flex-grow">
         <CardTitle className="text-lg">{title}</CardTitle>
       </CardContent>
-      <CardFooter className="flex justify-between">
+      <CardFooter className="flex justify-between items-center">
+        <span className="text-primary font-semibold uppercase">{category}</span>
         <time dateTime={date} className="w-full text-right text-sm">
           {date}
         </time>

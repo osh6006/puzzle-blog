@@ -20,7 +20,12 @@ const FilteredPostList: React.FunctionComponent<
         renderItem={(item) => (
           <li key={item.title + item.date}>
             <Link href={item.url}>
-              <PostCard date={item.dateString} title={item.title} />
+              <PostCard
+                date={item.dateString}
+                title={item.title}
+                category={item.category}
+                imageUrl={item.thumbnail}
+              />
             </Link>
           </li>
         )}

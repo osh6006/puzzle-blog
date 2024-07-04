@@ -1,5 +1,5 @@
 import * as React from "react";
-import { IPOST } from "@/types/blog";
+import { IPost } from "@/types/blog";
 import { MdxComponents } from "@/components/mdx";
 import { MDXRemote } from "next-mdx-remote/rsc";
 
@@ -11,16 +11,15 @@ import remarkBreaks from "remark-breaks";
 import rehypePrettyCode from "rehype-pretty-code";
 
 interface IBlogBodyProps {
-  blogDetail: IPOST;
+  blogDetail: IPost;
 }
 
 const BlogBody: React.FunctionComponent<IBlogBodyProps> = ({ blogDetail }) => {
   return (
-    <div
+    <section
       className="
         w-full
         relative
-        prose prose-sm sm:prose-base lg:prose-lg xl:prose-xl 2xl:prose-2xl dark:prose-invert mx-auto
     "
     >
       <MDXRemote
@@ -48,7 +47,7 @@ const BlogBody: React.FunctionComponent<IBlogBodyProps> = ({ blogDetail }) => {
         }}
         components={MdxComponents}
       />
-    </div>
+    </section>
   );
 };
 

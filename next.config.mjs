@@ -4,19 +4,12 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "enjoydev.life",
+        hostname: "res.cloudinary.com",
         port: "",
-        pathname: "/posts/**",
-      },
-
-      {
-        protocol: "https",
-        hostname: "www.d5br5.dev",
-        port: "",
-        pathname: "/posts/**",
+        pathname: "/**",
       },
     ],
-    formats: ["image/webp"],
+    formats: ["image/webp", "image/avif"],
   },
 };
 

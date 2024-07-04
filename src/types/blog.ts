@@ -15,3 +15,9 @@ export interface IPost {
 
 export interface IPostHeader
   extends Omit<IPost, "content" | "date" | "slug" | "url"> {}
+
+export interface HeadingItem {
+  text: string;
+  link: string;
+  indent: number;
+}
