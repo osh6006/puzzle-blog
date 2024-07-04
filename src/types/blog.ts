@@ -1,12 +1,17 @@
-export interface IPOST {
-  url: string;
+export interface IPost {
+  title: string;
+  author: string;
   category: string;
   slug: string | undefined;
-  title: string;
-  date: Date;
+  content: string;
   desc: string;
   thumbnail: string;
+  date: Date;
   dateString: string;
-  content: string;
+  lastmod: string;
   readingMinutes: number;
+  url: string;
 }
+
+export interface IPostHeader
+  extends Omit<IPost, "content" | "date" | "slug" | "url"> {}

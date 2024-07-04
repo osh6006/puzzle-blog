@@ -2,7 +2,7 @@ import fs from "fs";
 import dayjs from "dayjs";
 import { sync } from "glob";
 import matter from "gray-matter";
-import { IPOST } from "@/types/blog";
+import { IPost } from "@/types/blog";
 import { BASE_PATH, POSTS_PATH } from "@/constants/blog";
 import readingTime from "reading-time";
 
@@ -20,14 +20,15 @@ export const parsePostAbstract = (postPath: string) => {
 
   // /blog/category1/title1
   const url = `/blog/${category}/${slug}`;
+
   return { url, category, slug };
 };
 
 // 하나의 글에 대한 머리글과 콘텐츠 반환
-export const parsePost = async (postPath: string): Promise<IPOST> => {
+export const parsePost = async (postPath: string): Promise<IPost> => {
   const postAbstract = parsePostAbstract(postPath);
   const postDetail = await parsePostDetail(postPath);
-  return { ...postAbstract, ...postDetail } as IPOST;
+  return { ...postAbstract, ...postDetail } as IPost;
 };
 
 // MDX 상세 조회
@@ -36,10 +37,16 @@ const parsePostDetail = async (postPath: string) => {
   const { data, content } = matter(file);
   const grayMatter = data;
   const readingMinutes = Math.ceil(readingTime(content).minutes);
+
   const dateString = dayjs(grayMatter.date)
     .locale("ko")
     .format("YYYY년 MM월 DD일");
-  return { ...grayMatter, dateString, content, readingMinutes };
+
+  const lastmod = dayjs(grayMatter.lastmod)
+    .locale("ko")
+    .format("YYYY년 MM월 DD일");
+
+  return { ...grayMatter, dateString, content, readingMinutes, lastmod };
 };
 
 // 모든 MDX 파일 조회
@@ -50,7 +57,7 @@ export const getPostPaths = (category?: string) => {
 };
 
 // 모든 포스트 목록 조회
-export const getPostList = async (category?: string): Promise<IPOST[]> => {
+export const getPostList = async (category?: string): Promise<IPost[]> => {
   const paths: string[] = getPostPaths(category);
 
   const posts = await Promise.all(
@@ -71,7 +78,7 @@ export const getCategoryList = async (): Promise<(string | undefined)[]> => {
 };
 
 // 모든 포스트 조회 후 날짜순으로 정렬
-export const getNewPosts = async (): Promise<IPOST[]> => {
+export const getNewPosts = async (): Promise<IPost[]> => {
   const allPosts = await getPostList();
   const newPosts = allPosts.sort((a, b) => b.date.getTime() - a.date.getTime());
   return newPosts;

@@ -8,6 +8,13 @@ const nextConfig = {
         port: "",
         pathname: "/posts/**",
       },
+
+      {
+        protocol: "https",
+        hostname: "www.d5br5.dev",
+        port: "",
+        pathname: "/posts/**",
+      },
     ],
     formats: ["image/webp"],
   },
