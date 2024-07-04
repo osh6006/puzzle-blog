@@ -40,7 +40,7 @@ export default async function Home() {
             <MoveRightIcon />
           </Link>
         </div>
-        <section className="h-fit">
+        <section className="h-fit mt-4">
           <Suspense fallback={<PostSkeleton />}>
             <NewPostList />
           </Suspense>

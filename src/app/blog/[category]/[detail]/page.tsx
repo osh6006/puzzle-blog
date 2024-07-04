@@ -4,6 +4,7 @@ import BlogHeader from "@/components/blog-detail/blog-header";
 import BlogBody from "@/components/blog-detail/blog-body";
 import { IPostHeader } from "@/types/blog";
 import BlogSideBar from "@/components/blog-detail/blog-sidebar";
+import Script from "next/script";
 
 // 허용된 param 외 접근시 404
 export const dynamicParams = false;
@@ -36,7 +37,6 @@ export default async function BlogDetailPage({
       <BlogBody blogDetail={blogDetail} />
       <BlogSideBar blogIndex={blogIndex} />
       <hr />
-      {/* 댓글 */}
     </div>
   );
 }

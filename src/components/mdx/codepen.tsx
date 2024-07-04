@@ -1,4 +1,6 @@
-import Script from "next/script";
+"use client";
+
+import { Suspense } from "react";
 
 interface ICodepenProps {
   title: string;
@@ -12,23 +14,19 @@ const Codepen: React.FunctionComponent<ICodepenProps> = ({
   user,
 }) => {
   return (
-    <>
-      <p
-        className="codepen"
-        data-height="500"
-        data-default-tab="html,result"
-        data-slug-hash={hash}
-        data-user={user}
-      >
-        <span>
-          See the Pen
-          <a href={`https://codepen.io/${user}/pen/${hash}`}>{title}</a> by{" "}
-          {user} (<a href={`https://codepen.io/${user}`}>@{user}</a>) on
-          <a href="https://codepen.io">CodePen</a>.
-        </span>
-      </p>
-      <Script async src="https://cpwebassets.codepen.io/assets/embed/ei.js" />
-    </>
+    <iframe
+      width="100%"
+      height="450"
+      title="인터섹션 옵저버 사용하기"
+      src={`https://codepen.io/osh6006/embed/${hash}?default-tab=html%2Cresult`}
+      loading="lazy"
+      allowFullScreen
+    >
+      See the Pen
+      <a href={`https://codepen.io/osh6006/pen/${hash}`}>{title}</a>
+      by osh6006 (<a href={`https://codepen.io/${user}`}>@{user}</a>) on
+      <a href="https://codepen.io">CodePen</a>.
+    </iframe>
   );
 };
 

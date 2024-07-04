@@ -25,20 +25,20 @@ interface IconType {
 const metadata: IconType = {
   info: {
     icon: () => <InfoIcon className="text-green-500 w-6 h-6" />,
-    boxClass: "bg-green-100",
+    boxClass: "bg-green-100 dark:bg-green-700",
   },
   danger: {
     icon: () => <CircleXIcon className="text-red-500 w-6 h-6" />,
-    boxClass: "bg-red-100",
+    boxClass: "bg-red-100 dark:bg-red-700",
   },
   warn: {
     icon: () => <CircleAlertIcon className="text-amber-500 w-6 h-6" />,
-    boxClass: "bg-amber-100",
+    boxClass: "bg-amber-100 dark:bg-yellow-700",
   },
 
   normal: {
     icon: () => <CircleCheckIcon className="text-blue-500 w-6 h-6" />,
-    boxClass: "bg-blue-100",
+    boxClass: "bg-blue-100 dark:bg-blue-700",
   },
 };
 
@@ -52,7 +52,7 @@ const Callout = (props: CalloutProps) => {
   return (
     <div
       className={cn(
-        "my-6 relative flex gap-3 justify-start rounded-md px-12 py-4",
+        "my-6 relative flex gap-3 justify-start not-prose rounded-md px-12 py-4 dark:text-white",
         boxClassName
       )}
     >

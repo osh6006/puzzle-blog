@@ -23,8 +23,12 @@ const PostCard: React.FunctionComponent<IPostCardProps> = ({
   category,
 }) => {
   return (
-    <Card className="flex  h-full flex-col cursor-pointer group hover:shadow-md hover:bg-primary-foreground transition-colors rounded-lg overflow-hidden ">
-      <CardHeader className="relative min-h-[200px]">
+    <Card
+      className="flex  h-full flex-col cursor-pointer group hover:shadow-md hover:bg-primary-foreground transition-colors rounded-lg overflow-hidden 
+     dark:bg-background  dark:hover:shadow dark:hover:shadow-primary dark:transition
+    "
+    >
+      <CardHeader className="relative min-h-[200px] overflow-hidden">
         {imageUrl ? (
           <Image
             src={imageUrl}
@@ -33,14 +37,18 @@ const PostCard: React.FunctionComponent<IPostCardProps> = ({
             style={{
               backgroundSize: "cover",
             }}
+            className="group-hover:scale-105 transition-all"
           />
         ) : (
-          <div className="w-full flex items-center group-hover:bg-primary-foreground transition duration-200 justify-center flex-col inset-0 absolute bg-gray-200 ">
+          <div
+            className="w-full flex items-center group-hover:bg-primary-foreground transition duration-200 justify-center flex-col inset-0 absolute bg-gray-200 
+          "
+          >
             <ApertureIcon size={100} />
           </div>
         )}
       </CardHeader>
-      <CardContent className="mt-4 flex-grow">
+      <CardContent className="mt-4 flex-grow dark:">
         <CardTitle className="text-lg">{title}</CardTitle>
       </CardContent>
       <CardFooter className="flex justify-between items-center">

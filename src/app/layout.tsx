@@ -5,6 +5,7 @@ import Header from "@/components/layouts/header";
 import Footer from "@/components/layouts/footer";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from "@/providers/theme-provider";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -26,10 +27,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={cn("flex min-h-dvh flex-col", pretendard.className)}>
-        <Header />
-        {children}
-        <Footer />
-        <Toaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Header />
+          {children}
+          <Footer />
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

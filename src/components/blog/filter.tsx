@@ -35,7 +35,7 @@ const Filter: React.FunctionComponent<IFilterProps> = ({
             className={cn(
               "uppercase",
               selectedFilter === category
-                ? "bg-primary text-white hover:bg-primary hover:text-white"
+                ? "bg-primary text-white hover:bg-primary hover:text-white dark:bg-sky-800"
                 : ""
             )}
           >

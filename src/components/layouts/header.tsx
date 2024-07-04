@@ -10,7 +10,7 @@ import Inner from "@/components/layouts/inner";
 
 function Header() {
   return (
-    <header className="fixed flex w-full h-[55px] border-b items-center justify-center shadow-sm bg-white shadow-blue-50 z-20 px-4">
+    <header className="fixed flex w-full h-[55px] border-b items-center justify-center shadow-sm bg-slate-50 dark:bg-black shadow-blue-50 z-20 px-4">
       <Inner className="w-full flex items-center justify-between max-w-6xl gap-x-4 ">
         <div className="flex items-center gap-x-4">
           <Logo text="Puzzle" />
