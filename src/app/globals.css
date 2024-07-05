@@ -137,10 +137,21 @@ code {
   width: 1.75rem;
 }
 
+/* theme */
 .dark {
   --background: var(--black);
   --foreground: var(--white);
 
   --primary: 201.21, 95.08%, 76.08%;
   --primary-foreground: 210 40% 98%;
+}
+
+/* search-highlight */
+
+.dark .highlight {
+  @apply bg-sky-600;
+}
+
+.highlight {
+  @apply bg-sky-200;
 }

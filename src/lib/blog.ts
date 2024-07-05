@@ -2,9 +2,14 @@ import fs from "fs";
 import dayjs from "dayjs";
 import { sync } from "glob";
 import matter from "gray-matter";
-import { HeadingItem, IPost } from "@/types/blog";
+import { HeadingItem, IPost, ISearchResult } from "@/types/blog";
 import { BASE_PATH, POSTS_PATH } from "@/constants/blog";
 import readingTime from "reading-time";
+import {
+  extractSurroundingSentences,
+  highlightWord,
+  removeMarkdown,
+} from "./utils";
 
 // MDX Abstract
 // url, cg path, cg name, slug
@@ -103,4 +108,35 @@ export const parseIndex = (content: string): HeadingItem[] => {
       indent: (heading.match(/#/g)?.length || 2) - 2,
     })) || []
   );
+};
+
+// 블로그 검색
+export const getSearchPost = async (
+  query: string
+): Promise<ISearchResult[]> => {
+  if (!query) return [];
+
+  const allPosts = await getPostList();
+
+  const searchedPosts = allPosts.filter((post) => {
+    if (
+      post.title.includes(query) ||
+      post.content.includes(query) ||
+      post.category.includes(query)
+    ) {
+      return true;
+    } else return false;
+  });
+
+  const results = extractSurroundingSentences(searchedPosts, query);
+
+  return results.map((result) => {
+    return {
+      ...result,
+      matchedContents: highlightWord(
+        removeMarkdown(result.matchedContents),
+        query
+      ),
+    };
+  });
 };

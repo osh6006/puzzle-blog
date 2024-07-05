@@ -21,3 +21,10 @@ export interface HeadingItem {
   link: string;
   indent: number;
 }
+
+export interface ISearchResult {
+  title: string;
+  category: string;
+  matchedContents: string;
+  url: string;
+}
