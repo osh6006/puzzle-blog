@@ -34,7 +34,7 @@ const Filter: React.FunctionComponent<IFilterProps> = ({
   if (!mounted) return null;
 
   return (
-    <ul className="flex items-center gap-2 sm:gap-4 flex-wrap">
+    <ul className="flex items-center justify-center sm:justify-start gap-2 sm:gap-4 flex-wrap">
       {["all", ...categoryList].map((category, index) => (
         <li key={index}>
           <Button

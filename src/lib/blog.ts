@@ -1,4 +1,5 @@
-import fs from "fs";
+import * as fs from "fs";
+import * as path from "path";
 import dayjs from "dayjs";
 import { sync } from "glob";
 import matter from "gray-matter";
@@ -72,12 +73,16 @@ export const getPostList = async (category?: string): Promise<IPost[]> => {
 };
 
 // 모든 카테고리 조회
-export const getCategoryList = async (): Promise<(string | undefined)[]> => {
+export const getCategoryList = async (): Promise<string[]> => {
+  // 상위 경로의 디렉토리 목록을 가져옴
   const paths: string[] = sync(`${POSTS_PATH}/*`);
-  const categoryList = paths.map((path) => {
-    const tempList = path.split("\\");
-    return tempList.at(-1);
-  });
+
+  // 디렉토리 경로에서 이름을 추출하여 반환
+  const categoryList = paths
+    .filter((path) => fs.lstatSync(path).isDirectory())
+    .map((dirPath) => {
+      return path.basename(dirPath);
+    });
 
   return categoryList;
 };
@@ -85,7 +90,9 @@ export const getCategoryList = async (): Promise<(string | undefined)[]> => {
 // 모든 포스트 조회 후 날짜순으로 정렬
 export const getNewPosts = async (): Promise<IPost[]> => {
   const allPosts = await getPostList();
-  const newPosts = allPosts.sort((a, b) => b.date.getTime() - a.date.getTime());
+  const newPosts = allPosts.sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
   return newPosts.filter((_, i) => i <= 10);
 };
 
