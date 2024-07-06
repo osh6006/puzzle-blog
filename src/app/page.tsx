@@ -10,16 +10,16 @@ export default async function Home() {
   return (
     <>
       <Layout>
-        <div className="flex items-center gap-x-2">
+        <div className="flex items-center justify-center sm:justify-start gap-x-2">
           <Heading as="h1" className="text-3xl sm:text-4xl  font-semibold ">
             프론트엔드 퍼즐 맞추기
           </Heading>
-          <PuzzleIcon className="text-primary" size={28} />
+          <PuzzleIcon className="text-primary hidden sm:block" size={28} />
         </div>
-        <p className="text-lg mt-6 font-light">
-          프론트엔드 라는 퍼즐을 한 조각 한 조각씩 맞춰가고 있는 중입니다.
+        <p className="text-lg text-center sm:text-left mt-6 font-light">
+          프론트엔드 라는 퍼즐을 한 조각 한 조각씩 맞춰가고 있는 중 입니다.
         </p>
-        <p className="text-lg font-light">
+        <p className="text-lg text-center sm:text-left font-light">
           이 블로그는 프론트엔드 개발 여정을 기록하고, 배운 것들을 공유하기 위해
           만들었습니다.
         </p>
@@ -30,11 +30,11 @@ export default async function Home() {
             className="text-2xl items-center flex gap-x-2 sm:text-3xl font-semibold my-4"
           >
             새로 올라온 글
-            <LeafIcon className="text-lime-500" />
+            <LeafIcon className="text-lime-500 hidden sm:block" />
           </Heading>
           <Link
             href="/blog"
-            className="flex gap-x-2 text-lg hover:text-primary transition hover:-translate-x-2"
+            className="flex gap-x-2 sm:text-lg hover:text-primary transition hover:-translate-x-2"
           >
             모두 보러 가기
             <MoveRightIcon />
