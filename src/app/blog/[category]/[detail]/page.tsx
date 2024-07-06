@@ -4,7 +4,8 @@ import BlogHeader from "@/components/blog-detail/blog-header";
 import BlogBody from "@/components/blog-detail/blog-body";
 import { IPostHeader } from "@/types/blog";
 import BlogSideBar from "@/components/blog-detail/blog-sidebar";
-import Script from "next/script";
+import { Metadata } from "next";
+import { getMetadata } from "@/lib/seo";
 
 // 허용된 param 외 접근시 404
 export const dynamicParams = false;
@@ -40,3 +41,20 @@ export default async function BlogDetailPage({
     </div>
   );
 }
+
+export const generateMetadata = async ({
+  params,
+}: {
+  params: { category: string; detail: string };
+}): Promise<Metadata> => {
+  const blogDetail = await parsePost(
+    `${BASE_PATH}/${params.category}/${params.detail}.mdx`
+  );
+
+  return getMetadata({
+    title: blogDetail.title,
+    description: blogDetail.desc,
+    ogImage: ``,
+    asPath: `/${blogDetail.category}/${blogDetail.title}`,
+  });
+};
