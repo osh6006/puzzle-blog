@@ -18,12 +18,20 @@ const Filter: React.FunctionComponent<IFilterProps> = ({
   const pathname = usePathname();
   const { replace } = useRouter();
 
+  const [mounted, setMounted] = React.useState(false);
+
   const handleFiltering = (filter?: string) => {
     if (!filter) return;
     const params = new URLSearchParams(searchParams);
     params.set("filter", filter);
     replace(`${pathname}?${params.toString()}`);
   };
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   return (
     <ul className="flex items-center gap-x-4 ">
