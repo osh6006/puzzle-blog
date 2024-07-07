@@ -32,10 +32,6 @@ const BlogBody: React.FunctionComponent<IBlogBodyProps> = ({ blogDetail }) => {
                 rehypePrettyCode,
                 {
                   theme: "one-dark-pro",
-                  // theme: {
-                  //   dark: "one-dark-pro",
-                  //   light: "github-light",
-                  // },
                   defaultLang: "plaintext",
                   grid: false,
                   keepBackground: false,

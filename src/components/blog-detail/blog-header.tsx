@@ -17,8 +17,8 @@ const BlogHeader: React.FunctionComponent<IBlogHeaderProps> = ({
   lastmod,
 }) => {
   return (
-    <section className="flex flex-col w-full items-center relative justify-center mx-auto">
-      <h1 className="text-3xl font-bold break-keep tracking-tight sm:text-4xl mx-auto max-w-3xl text-center">
+    <section className="flex  flex-col w-full items-center relative justify-center mx-auto">
+      <h1 className="text-2xl mb-2 sm:mb-4 font-bold break-keep tracking-tight sm:text-4xl mx-auto max-w-3xl text-center">
         {title}
       </h1>
 
@@ -27,10 +27,14 @@ const BlogHeader: React.FunctionComponent<IBlogHeaderProps> = ({
       </div>
       <div className="w-full text-sm md:text-base  my-2 flex justify-center text-muted-foreground">
         <span className="text-sm">
-          작성 • <time className="font-semibold text-base">{dateString}</time>
+          작성 •{" "}
+          <time className="font-semibold text-sm sm:text-base">
+            {dateString}
+          </time>
         </span>
-        <span className="before:content-[''] text-sm before:px-[0.25rem]">
-          수정 • <time className="font-semibold text-base">{lastmod}</time>
+        <span className=" before:content-[''] text-sm before:px-[0.25rem]">
+          수정 •{" "}
+          <time className="font-semibold text-sm sm:text-base">{lastmod}</time>
         </span>
       </div>
       {thumbnail ? (
