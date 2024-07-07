@@ -9,7 +9,6 @@ interface IBlogHeaderProps extends IPostHeader {}
 const BlogHeader: React.FunctionComponent<IBlogHeaderProps> = ({
   category,
   dateString,
-  desc,
   readingMinutes,
   author,
   title,

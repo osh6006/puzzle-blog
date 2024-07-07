@@ -23,7 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const allPostSitemaps = allPost.map((post) => {
     return {
-      url: `${BASE_URL}/${post.category}/${post.title}`,
+      url: `${BASE_URL}/${post.url}`,
       lastModified: new Date(),
     };
   });
