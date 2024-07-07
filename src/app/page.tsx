@@ -2,7 +2,9 @@ import Heading from "@/components/common/heading";
 import PostSkeleton from "@/components/common/post-skeleton";
 import NewPostList from "@/components/home/new-post-list";
 import Layout from "@/components/layouts/layout";
+import { getMetadata } from "@/lib/seo";
 import { LeafIcon, MoveRightIcon, PuzzleIcon } from "lucide-react";
+import { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -49,3 +51,11 @@ export default async function Home() {
     </>
   );
 }
+
+export const generateMetadata = async ({}): Promise<Metadata> => {
+  return getMetadata({
+    title: `프론트엔드 퍼즐 맞추기`,
+    description: "",
+    asPath: "/",
+  });
+};
