@@ -2,8 +2,9 @@ import { getPostList } from "@/lib/blog";
 import { MetadataRoute } from "next";
 
 const BASE_URL =
-  process.env.NODE_ENV === "development" ? "http://localhost:3000" : "";
-
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:3000"
+    : "https://www.puzzler.life";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const defaultSitemap = [
     {
