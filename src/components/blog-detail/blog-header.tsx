@@ -1,5 +1,5 @@
 import { IPostHeader } from "@/types/blog";
-import { PenLineIcon, TimerIcon } from "lucide-react";
+import { TimerIcon } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
 import AlternativeThumbnail from "../common/alternative-thumbnail";

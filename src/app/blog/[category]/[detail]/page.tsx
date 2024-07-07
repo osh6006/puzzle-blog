@@ -6,6 +6,7 @@ import { IPostHeader } from "@/types/blog";
 import BlogSideBar from "@/components/blog-detail/blog-sidebar";
 import { Metadata } from "next";
 import { getMetadata } from "@/lib/seo";
+import Giscus from "@/components/blog-detail/giscus";
 
 // 허용된 param 외 접근시 404
 export const dynamicParams = false;
@@ -38,6 +39,7 @@ export default async function BlogDetailPage({
       <BlogBody blogDetail={blogDetail} />
       <BlogSideBar blogIndex={blogIndex} />
       <hr />
+      <Giscus />
     </div>
   );
 }
