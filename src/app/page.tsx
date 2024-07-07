@@ -53,9 +53,5 @@ export default async function Home() {
 }
 
 export const generateMetadata = async ({}): Promise<Metadata> => {
-  return getMetadata({
-    title: `프론트엔드 퍼즐 맞추기`,
-    description: "",
-    asPath: "/",
-  });
+  return getMetadata();
 };

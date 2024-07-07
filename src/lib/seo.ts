@@ -11,7 +11,7 @@ type GetMetadataProps = {
 export const getMetadata = (metadataProps?: GetMetadataProps) => {
   const { title, description, asPath, ogImage } = metadataProps || {};
 
-  const TITLE = title ? `${title} | 위픽` : META.title;
+  const TITLE = title ? `${title}` : META.title;
   const DESCRIPTION = description || META.description;
   const PAGE_URL = asPath ? asPath : new URL(META.url);
   const OG_IMAGE = ogImage || META.ogImage;

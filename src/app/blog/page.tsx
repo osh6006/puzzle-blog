@@ -1,6 +1,8 @@
 import Filter from "@/components/blog/filter";
 import FilteredPostList from "@/components/blog/filtered-post-list";
 import { getCategoryList } from "@/lib/blog";
+import { getMetadata } from "@/lib/seo";
+import { Metadata } from "next";
 
 export default async function BlogPage({
   searchParams,
@@ -19,3 +21,7 @@ export default async function BlogPage({
     </>
   );
 }
+
+export const generateMetadata = async ({}): Promise<Metadata> => {
+  return getMetadata();
+};
