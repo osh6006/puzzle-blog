@@ -1,0 +1,156 @@
+---
+title: getBoundingClientRect() vs Element.scrollHeight
+date: 2023-02-08
+lastmod: 2024-02-02
+author: ohs6006
+thumbnail: https://res.cloudinary.com/dxesudkxn/image/upload/v1707107069/blog/vjpg9kxt51fhqqnuixoj.gif
+---
+
+사이드 프로젝트를 진행하던 중 `header` 높이를 조작하는 과정에서 `Element.getBoundingClientRect()` 와 `Element.scrollHeight`를 사용할 수 있다는 것을 알았고 결과는 비슷했습니다. 하지만 어떤 상황에서 어떤 것이 더 좋을까? 하는 생각이 들었고 간단한 프로젝트를 만들면서 두 가지 방법을 적용해 보고 비교해 보았습니다.
+
+<Callout type="info">이 글은 2024-02-02 에 업데이트 되었습니다.</Callout>
+<Callout type="info">
+  이 글은 HTML, CSS , JavaScript에 대한 기본적인 지식을 알고 있어야 합니다.
+</Callout>
+
+## MDN 문서에서는 어떻게 정의하고 있는가
+
+`Element.getBoundingClientRect(){:js}` 메서드는 엘리먼트의 크기와 뷰포트에 상대적인 위치 정보를 제공하는 DOMRect 객체를 반환합니다.
+
+`Element.scrollHeight(){:js}` 읽기 전용 속성은 요소 콘텐츠의 총 높이를 나타내며, 바깥으로 넘쳐서 보이지 않는 콘텐츠도 포함합니다.
+
+정의로만 비교했을 때는 `getBoundingClientRect(){:js}` 는 매서드로 뷰포트에 상대적인 위치 정보 객체를 반환하고, `scrollHeight{:js}`는 읽기 전용 속성으로 요소 콘텐츠의 총 높이와 바깥으로 넘쳐서 보이지 않는 콘텐츠까지 계산한 높이를 반환하는 것으로 보입니다. 또한 MDN 문서에서는 `scrollHeight`는 `::before` `::after` 등 가상클래스의 요소의 높이도 결과에 포함된다고 설명되어 있었습니다.
+
+따라서 `getBoundingClientRect(){:js}`는 뷰포트에서의 위치정보 **객체**를 반환하고,
+`scrollHeight{:js}`은 **읽기전용** 속성으로 **콘텐츠의 총 높이**를 나타내는 것으로 볼 수 있습니다.
+
+## 직접 사용하여 비교해 보기
+
+정의로만 비교하면 어떻게 사용하는지 자세하게 감이 잡히질 않습니다 두 가지의 방법을 사용하는 요소를 만들고 조작해 봅시다.
+
+### HTML & CSS 작성하기
+
+HTML과 CSS는 아래의 코드와 같이 sample이라는 `id {:css}`를 작성하고, 크기와 높이, 색, 가운데정렬 등을 해주었습니다.
+
+```html
+<div id="sample">I'm Sample</div>
+```
+
+```css
+#sample {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 500px;
+  height: 100px;
+  background-color: pink;
+}
+```
+
+### JS
+
+자바스크립트는 각각의 값을 가져옵니다.
+
+```js
+const sampleEl = document.getElementById("sample");
+
+console.log(sampleEl.getBoundingClientRect());
+console.log(sampleEl.scrollHeight);
+```
+
+### 결과
+
+```js
+
+// getBoundingClientRect
+{
+  "x": 8,
+  "y": 8,
+  "width": 500,
+  "height": 100,
+  "top": 8,
+  "right": 508,
+  "bottom": 108,
+  "left": 8
+}
+
+// scrollHeight
+100
+
+```
+
+결과는 위의 코드와 같았습니다. `getBoundingClientRect(){:js}`는 요소의 크기에 대한 정보 뿐 아니라 다양한 정보객체를 반환해 주는 한편, `scrollHeight{:js}`는 오직 요소의 순수한 크기(가상요소 포함)을 나타내고 있습니다.
+
+## 응용하기 (간단한 기능 만들기)
+
+![간단한 기능](https://res.cloudinary.com/dxesudkxn/image/upload/v1707104784/blog/hszuzg7btiurinmlypbj.gif)
+
+위의 두가지 방법을 사용하면 어떤 기능을 만들 수 있을까요? 다른 다양한 기능이 있겠지만 저는 위의 Netflix의 Navbar처럼 제가 사이드 프로젝트에서 활용했던 기능인 **스크롤을 내릴시 상단 Navbar의 높이보다 내려갈 경우 Navbar의 색상(또는 투명도)이 변경되는 간단한 기능**을 두 가지 방법을 사용하여 구현해 보겠습니다.
+
+### HTML & CSS
+
+상단바를 만들고 예쁘게 꾸며 줍시다.
+
+```html
+<body>
+  <nav id="navbar">NetFlix!</nav>
+</body>
+```
+
+```css
+body {
+  margin: 0;
+  padding: 0;
+  height: 200vh;
+}
+#navbar {
+  position: sticky;
+  height: 60px;
+  padding: 10px;
+  z-index: 10;
+  top: 0;
+  transition-duration: 500ms;
+  background-color: pink;
+}
+```
+
+### 구현하기
+
+`getBoundingClientRect()`로 구현하려면 어떻게 구현해야 할까요? 우선 처음으로 `navbar`의 높이를 구하고 스크롤바의 위치를 추적해서 `navbar`의 높이보다 높아질 경우 색을 변경해 주면 될 것 같습니다.
+
+`scrollHeight`도 마찬가지로 높이를 구하고 비교한 후 색을 변경해 주면 됩니다.
+
+```js
+const navbarEl = document.getElementById("navbar");
+
+window.addEventListener("scroll", (e) => {
+  // 스크롤바 위치 추적
+  const scrollPosition = window.scrollY || window.pageYOffset;
+
+  // navbar의 높이 구하기
+  const rect = navbarEl.getBoundingClientRect();
+  const scrollHeight = navbarEl.scrollHeight;
+
+  // if(rect.height < scrollPosition) 이렇게 써도 동작!
+  if (rect.height < scrollPosition) {
+    navbarEl.style.backgroundColor = "lightblue";
+  } else {
+    navbarEl.style.backgroundColor = "pink";
+  }
+});
+```
+
+### 결과
+
+스크롤을 천천히 내려보세요!
+
+<CodePen title="인터섹션 옵저버 사용하기" user="osh6006" hash="XWGYbLB" />
+
+## 결론
+
+두 가지 방법 모두 요소의 높이를 구할 수 있지만 `getBoundingClientRect()` 경우 더 많은 위치 정보를 얻을 수 있어서 요소의 위치에 대한 다양한 정보를 원한다면 이 방법을 사용하고 `scrollHeight`를 이용해서도 요소의 간단한 높이를 구할 수 있지만 **가상요소**의 높이까지 포함한다는 것을 주의해야 합니다.
+
+## 참고 사이트
+
+[https://developer.mozilla.org/ko/docs/Web/API/Element/scrollHeight](https://developer.mozilla.org/ko/docs/Web/API/Element/scrollHeight)
+[https://developer.mozilla.org/ko/docs/Web/API/Element/getBoundingClientRect](https://developer.mozilla.org/ko/docs/Web/API/Element/getBoundingClientRect)

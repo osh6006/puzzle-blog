@@ -2,7 +2,6 @@
 title: Intersection Observer API로 화면 요소 감지하기
 date: 2023-01-18
 lastmod: 2024-01-02
-tags: [javascript, intersection-observer]
 author: ohs6006
 thumbnail: "https://res.cloudinary.com/dxesudkxn/image/upload/v1720075295/blog/Intersection%20Observer/kcnie6capk73l4ujcxut.gif"
 ---
@@ -18,6 +17,13 @@ thumbnail: "https://res.cloudinary.com/dxesudkxn/image/upload/v1720075295/blog/I
 </Callout>
 
 ## 개념 알아보기
+
+Intersection Observer API는 상위 요소 또는 최상위 문서의 `viewport{:js}` 와 대상 요소 사이의 변화를 비동기적으로 관찰할 수 있는 수단을 제공합니다.
+
+쉽게말해서 **어떠한 요소가 얼마나 뷰포트에 노출되었는지 실시간으로 확인**이 가능합니다.
+
+주로 광고가 화면에 얼마나 노출되었는지 확인하거나, 특정 요소가 화면에 노출되었을 때 데이터를 요청하는 무한스크롤, 사용자에게 화면이 보일 때 애니메이션이 동작하는 작업 등
+에 쓰일 수 있습니다.
 
 ## 기본적인 사용법
 
