@@ -1,0 +1,315 @@
+---
+title: react와-createPortal로 완벽한 modal 만들기
+date: 2023-02-23
+lastmod: 2024-07-08
+author: ohs6006
+thumbnail: "https://res.cloudinary.com/dxesudkxn/image/upload/v1709435616/blog/wihgoguyyxgci8tm9ibe.gif"
+---
+
+제 사이드 프로젝트에서 사용 중인 Modal 구현 라이브러리를 리팩토링하고자 했던 이유는 기존 라이브러리가 제공하는 다양한 기능 중에서 필요한 부분만 사용하고 있었기 때문이었습니다. 이로 인해 프로젝트에 불필요한 코드와 의존성이 증가하는 문제가 있었습니다.
+
+리팩토링의 목표는 기존 라이브러리를 최대한 활용하면서도 필요한 부분만을 선택적으로 커스터마이징하여 나만의 Modal을 만들고자 하는 것이었습니다. 이를 위해 몇 가지 고려 사항과 최적의 방법을 찾기 위한 노력을 기록하고 블로그에 정리했습니다.
+
+<Callout type="info">이 글은 **2024-07-08** 에 업데이트 되었습니다.</Callout>
+
+<Callout type="warn">
+  이 글은 **HTML, CSS , JavaScript, TypeScript, React**에 대한 기본적인 지식을
+  알고 있어야 합니다. 또한 이 글을 보시기 전 리액트 공식 문서에서
+  **createPortal** 관련 파트를 읽고 보시면 더욱 도움이 됩니다.
+</Callout>
+
+## createPortal
+
+> **createPortal** 은 말 그대로 일부 하위 요소를 DOM의 다른 부분으로 렌더링할 수 있습니다.
+
+마치 닥터스트레인지가 마법을 부리듯, 리액트의 Portal API는 돔 트리의 부모-자식 관계에 구애받지 않고, 마치 여러 차원으로 요소를 이동시킬 수 있게 해주는 기능입니다. 이 API를 이용하면 마치 다른 차원에서 요소가 나타나는 듯한 효과를 낼 수 있습니다.
+
+### 사용법
+
+```tsx
+import { createPortal } from "react-dom";
+
+//
+
+<div>
+  <p>This child is placed in the parent div.</p>
+  {createPortal(
+    <p>This child is placed in the document body.</p>,
+    document.body
+  )}
+</div>;
+```
+
+위의 코드는 리액트 공식 문서에서 제공하는 코드로 `createPotal` 을 사용한 요소를 `body`의 하위로 이동시키는 코드 입니다.
+
+### 매개변수
+
+- children: JSX 조각(예: `<div />{:jsx}`또는 `<SomeComponent />{:jsx}`), 조각 ( `<>...</>{:jsx}`), 문자열이나 숫자 또는 이들의 배열과 같이 React로 렌더링할 수 있는 모든 것입니다.
+
+- domNode: 에서 반환한 것과 같은 일부 DOM 노드입니다 `document.getElementById(){:js}`. 노드가 이미 존재해야 합니다. 업데이트 중에 다른 DOM 노드를 전달하면 포털 콘텐츠가 다시 생성됩니다.
+
+- 선택 사항 `key` : 포털의 키로 사용할 고유한 문자열 또는 숫자입니다.
+
+위의 내용을 간단하게 물건에 비유하여 표현한다면,
+
+- children 이 내가 이동시킬 물건
+- domNode가 내가 이동시킬 장소 id,
+- key는 내가 이동시킬 물건의 이름 (선택 사항)
+
+## Modal
+
+이번에는 Modal에 대해서 알아보겠습니다. Modal이란 사용자에게 **특정 작업이나 정보를 입력하거나 표시하기 위해 화면에 나타나는 팝업 창이나 대화 상자**입니다. 주로 모달은 현재 작업을 일시적으로 중단하고 사용자에게 필요한 상호 작용을 유도하는 데 사용됩니다.
+
+## 우리가 실습할 프로젝트
+
+이제 드디어 우리의 프로젝트를 만들 차례입니다! 기본적인 UI는 위의 결과 화면 처럼 만들고, 개발 환경으로는 `codesandbox`와 `typescript`를 사용하고, 기본적인 CSS는 리액트에서 제공하는 `module.css`를 사용하겠습니다.
+
+### 요구사항 정의 (필수!)
+
+우선, 우리는 완벽한 Modal을 만들기 위해서 **WAI-ARIA** 에서 제공하는 모범 사례를 적용해야 합니다. 제가 적용한 모범 사례는 다음과 같습니다.
+
+1. 대화 상자가 열리면 `focus`가 대화 상자 내부의 요소로 이동해야 합니다.
+2. 키보드로 `Tab`을 누르면,대화 상자 내에서 탭 가능한 다음 요소로 `focus`을 이동합니다. `focus`가 대화 상자 내에서 탭 가능한 마지막 요소에 있는 경우 대화 상자 내에서 탭 가능한 첫 번째 요소로 `focus`를 이동합니다.
+3. 키보드로 `Shift + Tab`를 누르면 대화 상자 내에서 탭 가능한 이전 요소로 `focus`을 이동합니다.`focus`가 대화 상자 내에서 탭 가능한 첫 번째 요소에 있는 경우 대화 상자 내에서 탭 가능한 마지막 요소로 초점을 이동합니다.
+4. 키보드로 `ESC`를 누르면 대화상자를 닫습니다.
+
+#### 추가적인 요구사항 (필수 아님!)
+
+1. Modal은 재사용성이 가능하게 만들어야 합니다.
+2. Modal은 `header`에 제목과 닫기 버튼이 존재하고, `footer`에 취소와 확인 버튼이 있어야 합니다.
+3. Modal의 배경을 누르면 Modal이 사라져야 합니다.
+
+## 구현하기
+
+### Root에 내가 이동시킬 장소 등록하기
+
+```html
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + React + TS</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <div id="root-modal" />
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+```
+
+`createPortal`을 사용하기 위해서 부모 컴포넌트의 id를 설정해야 합니다. 기본적으로 Modal은 최상단에 존재하므로 body아래에 id를 root-modal을 설정하는 div 요소를 등록해 줍니다.
+
+### 재사용성이 가능한 Modal 컴포넌트
+
+Modal도 예를 들면 사용자의 정보를 확인하는 Modal, 프로덕트 정보를 확인하는 Modal등 여러가지가 존재할 수 있기 때문에 하나의 뼈대 Modal을 만들어 재사용성을 높여야 합니다.
+
+```tsx
+// src/components/modal.tsx
+import { createPortal } from "react-dom";
+import styles from "./modal.module.css";
+
+interface IModalProps {
+  title: string;
+  children: React.ReactNode;
+  isOpen: boolean;
+  onClose: () => void;
+  handleKeydown: (e: React.KeyboardEvent<HTMLDivElement>) => void;
+  ref?: React.MutableRefObject<HTMLDivElement | null>;
+}
+
+const Modal: React.FC<IModalProps> = ({
+  title,
+  ref,
+  onClose,
+  children,
+  isOpen,
+  handleKeydown,
+}) => {
+  return createPortal(
+    <div
+      ref={ref}
+      role="dialog"
+      aria-modal="true"
+      tabIndex={isOpen ? 0 : -1}
+      onKeyDown={handleKeydown}
+      className={styles.modalBackround}
+    >
+      <div className={styles.modalWrapper}>
+        <div className={styles.modalHeader}>
+          <h1>{title}</h1>
+          <button onClick={onClose} className={styles.button}>
+            X
+          </button>
+        </div>
+        {children}
+        <div className={styles.modalFooter}>
+          <button onClick={onClose}>확인</button>
+          <button onClick={onClose}>취소</button>
+        </div>
+      </div>
+    </div>,
+    document.getElementById("root-modal")!
+  );
+};
+
+export default Modal;
+```
+
+저는 위의 코드와 같이 구성했는데 Modal의 `header`와 `footer`를 고정시키고 안의 `contents` 영역만 갈아 끼우는 식으로 구성하였습니다. 또한 `createPortal`로 이동시킬 요소와, 이동시킬 장소 `id`를 `paramater` 로 등록 하였습니다.
+
+이 외에도 헤더의 제목인 `title` 모달을 닫을 수 있는 `onClose` 키보드를 눌렀을 때를 위한 `handleKeyDown` 마지막으로 `focus`를위한 `ref`를 `props`로 받아와 컴포넌트 재사용성을 높였습니다.
+
+> css는 아래의 **codesandbox** 결과 확인 창에서 확인하실 수 있습니다.
+
+### useModal 훅
+
+```tsx
+import { useEffect, useRef, useState } from "react";
+
+export default function useModal() {
+  const modalRef = useRef<HTMLDivElement | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const onClose = () => {
+    setIsOpen(false);
+  };
+
+  const onOpen = () => {
+    setIsOpen(true);
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      modalRef?.current?.focus();
+    }
+  }, [isOpen]);
+
+  const handleKeydown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Escape") {
+      onClose();
+    }
+
+    if (e.key === "Tab") {
+      handleTab(e);
+    }
+  };
+
+  const handleTab = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const focusableElements = modalRef.current?.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+
+    if (!focusableElements) return;
+
+    const firstElement = focusableElements[0] as HTMLElement;
+    const lastElement = focusableElements[
+      focusableElements.length - 1
+    ] as HTMLElement;
+
+    if (
+      e.shiftKey &&
+      e.key === "Tab" &&
+      document.activeElement === firstElement
+    ) {
+      e.preventDefault();
+      lastElement.focus();
+    } else if (
+      !e.shiftKey &&
+      e.key === "Tab" &&
+      document.activeElement === lastElement
+    ) {
+      e.preventDefault();
+      firstElement.focus();
+    }
+  };
+
+  return {
+    isOpen,
+    onClose,
+    onOpen,
+    handleKeydown,
+    modalRef,
+  };
+}
+```
+
+Modal을 사용하려면 여러가지 `props` 받아와야 하기 때문에 여러 컴포넌트에서 사용 시 가독성과 효율성 떨어질 수 있습니다. 따라서, `useModal`훅을 만들어 사용하였습니다.
+
+### 재사용성있게 사용하기
+
+```tsx
+// src/App.tsx
+import DeleteModal from "./components/delet-modal";
+import useModal from "./hooks/useModal";
+
+function App() {
+  const { isOpen, onClose, onOpen, handleKeydown, modalRef } = useModal();
+
+  return (
+    <>
+      <div>
+        <button onClick={onOpen}>Modal Open</button>
+      </div>
+      {isOpen ? (
+        <DeleteModal
+          ref={modalRef}
+          isOpen={isOpen}
+          onClose={onClose}
+          handleKeydown={handleKeydown}
+        />
+      ) : (
+        <></>
+      )}
+    </>
+  );
+}
+
+export default App;
+```
+
+```tsx
+import Modal from "./modal";
+
+interface IModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  handleKeydown: (e: React.KeyboardEvent<HTMLDivElement>) => void;
+  ref?: React.MutableRefObject<HTMLDivElement | null>;
+}
+
+const DeleteModal: React.FC<IModalProps> = ({ ...props }) => {
+  return (
+    <>
+      <Modal title="데이터 삭제" {...props}>
+        <div>정말로 삭제하시겠습니까??</div>
+      </Modal>
+    </>
+  );
+};
+
+export default DeleteModal;
+```
+
+예를 들어 데이터를 삭제할 때 나타나는 모달을 사용한다고 하면 `DeleteModal.tsx` 컴포넌트를 만든 후, `Modal.tsx` 컴포넌트를 불러와 커스텀 해서 사용하면 됩니다.
+
+## CodeSandbox에서 결과 확인하기
+
+<CodeSandbox
+  src="https://codesandbox.io/p/devbox/determined-moore-fzgfrg?file=%2Fsrc%2FApp.tsx&embed=1"
+  title="react modal"
+  allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+  sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+/>
+
+## 결론
+
+라이브러리를 사용하지 않고 직접 구현하게 되면 처음에는 귀찮을 수 있겠지만 쉽게 스타일링을 지정할 수 있고, 가볍게 사용할 수 있으며, 여러곳에서 재사용하기 쉽기 때문에 사이드 프로젝트에서 라이브러리에서 직접 구현하여 사용하는 방법으로 리팩토링 하였습니다.
+
+## 참고 사이트
+
+[https://react.dev/reference/react-dom/createPortal](https://react.dev/reference/react-dom/createPortal)
+[https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/)

@@ -1,0 +1,380 @@
+---
+title: react와-zustand로 더 완벽한 modal 만들기
+date: 2023-03-01
+lastmod: 2024-03-14
+author: ohs6006
+thumbnail: https://res.cloudinary.com/dxesudkxn/image/upload/v1710429822/blog/rdsaeokobe2xjgvi6jqw.gif
+---
+
+이전 포스팅에서 `react`의 `createPortal`을 활용하여 modal을 구성해 보았습니다. 사용하기가 매우 편하고 쉽지만 몇 가지 단점이 있었고 이를 보완하고자 전역 상태로 modal을 관리하는 방법을 소개하고자 합니다.
+
+<Callout type="info">
+  이 글은 <strong>2024-07-18</strong> 에 업데이트 되었습니다.
+</Callout>
+
+<Callout type="warn">
+  이 글은 **HTML, CSS , JavaScript, TypeScript, React, zustand, tailwind css**에
+  대한 기본적인 지식을 알고 있어야 합니다. 또한 이 글을 보시기 전 **zustand**
+  공식 문서에서 **기본 사용법** 관련 글과 제가 이전에 작성한 **createPortal로
+  modal 만들기** 관련 글을 읽고 보시면 더욱 도움이 됩니다.
+</Callout>
+
+>
+
+[zustand 공식문서 바로가기](https://zustand-demo.pmnd.rs/)
+
+[createPortal로 modal 만들기](https://osh6006.github.io/posts/react%EC%99%80-createPortal%EB%A1%9C-%EC%99%84%EB%B2%BD%ED%95%9C-modal-%EB%A7%8C%EB%93%A4%EA%B8%B0/)
+
+## createPortal로 만든 modal의 문제점
+
+**createPortal 로 만든 modal**은 **자기가 사용할 곳에 modal 컴포넌트를 불러와 사용**해야서 사용해야 합니다. 그리고 `isOpen, setIsOpen` 과 같은 `boolean` 상태 값을 생성하여 사용합니다.
+
+물론 한 곳에서 사용하는 컴포넌트의 경우에는 위 방식도 상관 없지만 **여러 컴포넌트에서 사용할 경우 modal 컴포넌트를 다시 불러오고 상태 값을 한번 더 작성하는..** 작업을 반복하는 경우가 많았기 때문에 가독성와 사용성이 매우 불편하였습니다.
+
+따라서 이 문제점을 **전역 Modal 상태관리**로 해결 하고자 하였습니다.
+
+## 우리가 실습할 프로젝트
+
+오늘 실습할 프로젝트는 이전에 createPortal을 사용했었던 modal을 zustand를 이용하여 이전에 작성했던 modal의 불편한 점을 리팩토링 하겠습니다.
+
+#### 요구사항 정의 (필수)
+
+1. modal을 zustand를 사용하여 전역 상태로 관리할 것
+2. 여러 컴포넌트에서 재사용하기 쉽게, 가독성이 좋게 만들 것
+3. 사용자가 모달 확인 창을 눌렀을 때 전달할 콜백 함수를 등록할 수 있게 만들 것
+
+#### 추가적인 요구사항 (필수 아님!)
+
+1. `tailwind css`를 활용하여 만들 것
+
+## 구현하기
+
+### 1. Zustand 세팅
+
+zustand에서 기본으로 제공하는 문법으로 사용할 수 있지만 **기본적인 방법으로는 불필요한 곳에서 리랜더링**이 일어날 수 있습니다. 이를 방지하기 위해서 저는 아래의 블로그 글을 참고하여 적용하였습니다. `zustand`를 사용한다면 꼭 읽어보시는 것을 추천합니다.
+
+[Zustand 사용법](https://velog.io/@apparatus1/zustand)  
+[Zustand 현명하게 사용하기](https://hackids.tistory.com/151)
+
+#### Zustand 전역 설정
+
+zustand에서 사용하는 전역 설정을 해두었습니다. `createStore`은 미들웨어를 자동으로 적용하여 `store`을 만들 때 `immer`과 `devtools`를 사용할 수 있게 해 줍니다.
+
+또한 `SelectorHook`은 `Selector`를 설정하여 **여러 컴포넌트에서 불러올 때 전체 상태를 구독하여 가져오는 것이 아니라 미리 지정한 값을 반환**하고, 그 외에는 selector에 따라 값을 가져오도록 했습니다. (리렌더링을 방지해 줍니다.)
+
+```tsx
+// src/stores/store.ts
+import { create, StateCreator } from "zustand";
+import { devtools } from "zustand/middleware";
+import { immer } from "zustand/middleware/immer";
+
+// 스토어를 만들 때 미들웨어를 자동으로 사용하기
+export const createStore = <T extends object>(
+  initializer: StateCreator<
+    T,
+    [["zustand/devtools", never], ["zustand/immer", never]]
+  >
+) =>
+  create<T, [["zustand/devtools", never], ["zustand/immer", never]]>(
+    devtools(immer(initializer))
+  );
+
+/**
+ * @template S zustand store 상태
+ * @template K selector가 없는 경우 default로 사용할 key
+ */
+export type SelectorHook<S, K extends keyof S> = {
+  <U>(selector: (state: S) => U): U;
+  (): S[K];
+};
+```
+
+#### store 등록하기
+
+여러 개의 모달을 한 곳에서 관리하기 위해서 `modal store`를 만들어 주었습니다. 여기에는 기본적으로 `basic`과`another`라는 2가지 모달을 관리하고 있습니다. 하지만 모달이 너무 많아진다면 한 개의 `store`를 더 만들어 관리해 주는 것도 나쁘지 않을 것 같습니다.
+
+```tsx
+// src/stores/use-mopdal-store.ts
+import { SelectorHook, createStore } from "./store";
+
+type IModalName = "isOpenBasicModal" | "isOpenAnotherModal";
+
+interface IModalState {
+  isOpenBasicModal: boolean;
+  isOpenAnotherModal: boolean;
+
+  actions: {
+    openModal: (name: IModalName) => void;
+    closeModal: (name: IModalName) => void;
+  };
+}
+
+const useModalStore = createStore<IModalState>((set) => ({
+  isOpenBasicModal: false,
+  isOpenAnotherModal: false,
+  actions: {
+    openModal: (name) => {
+      set((state) => {
+        return {
+          ...state,
+          [name]: true,
+        };
+      });
+    },
+    closeModal: (name) => {
+      set((state) => {
+        return {
+          ...state,
+          [name]: false,
+        };
+      });
+    },
+  },
+}));
+
+// 여기서 새로운 Hook을 만들고, SelectorHook 타입으로 지정해줍니다.
+export const useModals: SelectorHook<IModalState, "isOpenBasicModal"> = (
+  selector = (state: IModalState) => state.isOpenBasicModal
+) => useModalStore(selector);
+
+export const useModalActions = () => useModalStore((state) => state.actions);
+```
+
+- 위의 코드에서 IModalName 은 모달의 이름이고 상태를 변화시킬 때 이름을 타입으로 지정하였습니다.
+- IModalState는 스토어의 상태이며 여기에 action과 modal 을 표시할 변수들이 들어갑니다.
+- useModalStore는 zustand로 사용할 변수와 함수를 초기화 시켜 줍니다.
+- useModals 는 store.ts에서 불러온 SelectorHook을 이용하여 컴포넌트 어디서든 store에 저장된 변수를 사용하기 쉽게 해 줍니다.
+- useModalActions 는 store의 함수들을 사용하기 쉽게 한번에 묶어주는 함수라고 할 수 있습니다.
+
+### 2. Modal 만들기
+
+이제 zustand 세팅을 바탕으로 전역 modal을 만들어 보겠습니다.
+
+#### 뼈대 Modal 만들기
+
+재사용성이 가능한 뼈대 모달을 만들어야 하기 때문에 이전 포스팅과 비슷한 틀을 만들어 주겠습니다.
+
+```tsx
+// src/components/modal.tsx
+interface IModalProps {
+  title: string;
+  onClose: () => void;
+  children?: React.ReactNode;
+  onConfirm?: () => void;
+}
+
+const Modal: React.FunctionComponent<IModalProps> = ({
+  title,
+  onClose,
+  onConfirm,
+  children,
+}) => {
+  const modalClose = () => {
+    onClose();
+  };
+
+  const modalConfirm = () => {
+    if (onConfirm) {
+      onConfirm();
+      onClose();
+    }
+  };
+
+  return (
+    <div
+      onClick={onClose}
+      className={
+        "fixed flex items-center justify-center inset-0 z-50 py-28 bg-[#161616] "
+      }
+    >
+      <div className="bg-white px-10 py-5 max-w-[500px] space-y-4">
+        <h1>{title}</h1>
+        {children}
+        <div className="flex justify-end gap-x-4 items-center">
+          <button
+            className="border-2 bg-red-400 rounded-md px-2 py-1"
+            onClick={modalClose}
+          >
+            취소
+          </button>
+          <button
+            className="border-2 bg-green-400 rounded-md px-2 py-1"
+            onClick={modalConfirm}
+          >
+            확인
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Modal;
+```
+
+위의 코드에서는 `props` 부분만 간단히 확인하면 이해하기 쉽습니다. `title`로 모달의 제목을 지정하고, `onClose` 는 모달을 닫아주는 함수 `onConfirm`은 확인을 눌렀을 때 사용할 함수를 콜백으로 전달하고 있습니다.
+
+#### Basic Modal과 Another Modal
+
+뼈대 modal을 사용해서 이제 두 가지의 모달을 만들어 주면 됩니다.
+
+```tsx
+// src/components/basic-modal.tsx
+import { useModalActions } from "@/stores/use-modal-store";
+import Modal from "./modal";
+
+const BasicModal = () => {
+  const { closeModal } = useModalActions();
+
+  console.log("basic modal rendered");
+
+  return (
+    <Modal
+      title="저는 Basic 모달 입니다. 정말 삭제 하실꺼에요?"
+      onClose={() => closeModal("isOpenBasicModal")}
+      onConfirm={() => {
+        console.log("Basic 모달 삭제 완료! 너무하시네요..");
+        closeModal("isOpenBasicModal");
+      }}
+    >
+      <p>Basic 모달의 특별한 컴포넌트를 여기에 작성하세요</p>
+    </Modal>
+  );
+};
+
+export default BasicModal;
+```
+
+```tsx
+// src/components/another-modal.tsx
+import { useModalActions } from "@/stores/use-modal-store";
+import Modal from "./modal";
+
+const AnotherModal = () => {
+  const { closeModal } = useModalActions();
+
+  console.log("another modal rendered");
+
+  return (
+    <Modal
+      title="저는 Another 모달 입니다. 정말 삭제하실꺼에요? 저는 달라요"
+      onClose={() => closeModal("isOpenAnotherModal")}
+      onConfirm={() => {
+        console.log("Another 모달 삭제 완료! 너무하시네요..");
+        closeModal("isOpenAnotherModal");
+      }}
+    >
+      <p>Another 모달의 특별한 컴포넌트를 여기에 작성하세요</p>
+    </Modal>
+  );
+};
+
+export default AnotherModal;
+```
+
+#### Modal Provider 만들기
+
+마지막으로 핵심이 되는 `Modal Provider`입니다 이 부분이 제일 중요한데 여기서 `Modal Provider`는 리액트에서 기본적으로 제공하는 `useContext`를 사용하는 것이 아닌 `zustand`의 `store`를 사용하는 `Provider`로 `main.tsx`의 `app.tsx`위에 설정하면 이 곳에서 모든 모달을 관리할 수 있습니다!
+
+```tsx
+// src/providers/modal-provider
+import AnotherModal from "@/components/another-modal";
+import BasicModal from "@/components/basic-modal";
+
+import { useModals } from "@/stores/use-modal-store";
+
+const ModalProviders = () => {
+  const isBasicModal = useModals((state) => state.isOpenBasicModal);
+  const isAnotherModal = useModals((state) => state.isOpenAnotherModal);
+
+  return (
+    <>
+      {isBasicModal ? <BasicModal /> : null}
+      {isAnotherModal ? <AnotherModal /> : null}
+    </>
+  );
+};
+
+export default ModalProviders;
+```
+
+```tsx
+// src/main.tsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "./index.css";
+
+import ModalProviders from "./providers/modal-provider";
+
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+  <React.StrictMode>
+    <ModalProviders />
+    <App />
+  </React.StrictMode>
+);
+```
+
+위의 코드에서 제일 위에 `provider`로 모달들의 위치를 설정해 주면 모든 모달들을 한번에 관리하기가 쉽습니다.
+
+### 3. App.tsx에서 사용하기
+
+이제 모달을 사용해 보겠습니다 두개의 버튼을 만들고 클릭하면 각각 `basic` 과 `another`
+모달을 띄워 보겠습니다.
+
+```tsx
+// src/app.tsx
+import { useModalActions } from "./stores/use-modal-store";
+
+function App() {
+  const { openModal } = useModalActions();
+
+  return (
+    <div className="w-screen h-screen flex items-center justify-center gap-x-4">
+      <button
+        className="bg-green-600 px-4 py-2 rounded-md"
+        onClick={() => {
+          console.log("basic modal button click");
+          openModal("isOpenBasicModal");
+        }}
+      >
+        Basic Modal
+      </button>
+      <button
+        className="bg-red-600 px-4 py-2 rounded-md"
+        onClick={() => {
+          console.log("basic modal button click");
+          openModal("isOpenAnotherModal");
+        }}
+      >
+        Another Modal
+      </button>
+    </div>
+  );
+}
+
+export default App;
+```
+
+위의 코드에서는 모달을 오픈할 때 쓰는 `const { openModal } = useModalActions();` 부분만 보면 될 것 같습니다.
+
+## CodeSandbox에서 결과 확인하기
+
+결과를 확인해 보세요 콘솔을 켜서 리랜더링이 되는지도 확인 해 보시면 좋을 것 같습니다!
+
+<CodeSandbox
+  src="https://codesandbox.io/p/devbox/zustand-modal-rmcszz?file=%2Fsrc%2Fcomponents%2Fbasic-modal.tsx&embed=1&showConsole=true"
+  title="zustand modal"
+  allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+  sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+/>
+
+## 결론
+
+지난번 사용한 `createPortal`을 이용하는 것도 좋지만 전역 상태관리 툴을 이용하여 modal을 관리하면 사용성과 가독성이 뛰어난 modal을 사용할 수 있으며, `zustand`의 다앙한 기능을 이용할 수 있어서 너무 좋은 학습이었습니다.
+
+## 참고 사이트
+
+[https://docs.pmnd.rs/zustand/getting-started/introduction](https://docs.pmnd.rs/zustand/getting-started/introduction)
+[https://velog.io/@apparatus1/zustand](https://velog.io/@apparatus1/zustand)
+[https://osh6006.github.io/posts/react%EC%99%80-createPortal%EB%A1%9C-%EC%99%84%EB%B2%BD%ED%95%9C-modal-%EB%A7%8C%EB%93%A4%EA%B8%B0/](https://osh6006.github.io/posts/react%EC%99%80-createPortal%EB%A1%9C-%EC%99%84%EB%B2%BD%ED%95%9C-modal-%EB%A7%8C%EB%93%A4%EA%B8%B0/)
