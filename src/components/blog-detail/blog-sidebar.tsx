@@ -17,9 +17,9 @@ const BlogSideBar: React.FunctionComponent<IBlogSideBarProps> = ({
   const activeIndexList = useHeadingObserver("h2, h3");
   return (
     <aside className="not-prose absolute -top-[200px] left-full -mb-[100px] hidden h-[calc(100%+150px)] xl:block ">
-      <div className="sticky bottom-0 border rounded-md px-4 py-4 top-[200px] z-10 ml-[5rem] mt-[200px] w-[200px]">
-        <div className="mb-4 text-base font-semibold">On this page</div>
-        <ul className="text-sm">
+      <div className="sticky bottom-0 border rounded-md py-4 top-[100px] z-10 ml-[5rem] mt-[200px] w-[200px]">
+        <div className="mb-4 text-base font-semibold px-4">On this page</div>
+        <ul className="text-sm scrollbar-thin px-4 overflow-y-auto max-h-[350px] w-full">
           {blogIndex.map((item) => {
             const isH3 = item.indent === 1;
             const isIntersecting = activeIndexList.includes(item.link);
@@ -37,8 +37,10 @@ const BlogSideBar: React.FunctionComponent<IBlogSideBarProps> = ({
             );
           })}
         </ul>
-        <hr className="my-2" />
-        <SidebarFooter />
+        <div className="px-4">
+          <hr className="my-4" />
+          <SidebarFooter />
+        </div>
       </div>
     </aside>
   );

@@ -1,0 +1,269 @@
+---
+title: React와 Zustand로 완벽한 다크모드 만들기 with tailwind, clsx
+date: 2023-02-15
+lastmod: 2024-02-14
+author: ohs6006
+thumbnail: https://res.cloudinary.com/dxesudkxn/image/upload/v1707841659/blog/ip8lajvkr16eu1zfoq7k.gif
+---
+
+사이드 프로젝트에서 다크 모드를 리팩토링하는 중에, 기존 코드의 지저분함이 진행을 어렵게 만들고 있다고 느꼈습니다.
+
+그래서 현재까지의 경험을 토대로 기존 코드의 부족한 부분과 향상시킬 수 있는 부분을 고민해보고, 코드의 가독성과 유지보수성을 높이기 위한 설계 패턴과 구조를 적용해 볼 것입니다. 또한, 사용자 경험을 높이기 위한 다크 모드의 추가 기능도 고려해보자 합니다.
+
+>
+
+<Callout type="info">이 글은 **2024-02-14** 에 업데이트 되었습니다.</Callout>
+
+<Callout type="warn">
+  이 글은 HTML, CSS , JavaScript, TypeScript, React에 대한 기본적인 지식을 알고
+  있어야 합니다. 또한 다크 모드, zustand, tailwindcss, clsx 툴에 대한 개념을
+  알고 있다는 가정하에 진행합니다.
+</Callout>
+
+## 우리가 만들 미니 프로젝트
+
+위의 스크린샷 처럼 **light, dark, blue** 3가지 모드에 대한 테마를 적용해 보고자 합니다. 2가지가 아닌 3가지 테마로 진행하는 이유는 다크모드와 라이트모드 두가지에서만 적용하지 않고 좀 더 확장성 있게 설계하기 위해서 입니다.
+
+## 환경 세팅
+
+사용할 툴로는 짧은 코드로 훌륭한 가독성으로 전역 상태를 관리할 수 있는 zustand, 빠르게 CSS 작성을 도와주는 tailwindcss, 마지막으로 tailwindcss와 함께 조건부 스타일링을 할 수 있게 도와주는 clsx를 사용할 예정입니다. 사용법에 대해 잘 모르시는 경우 아래의 공식 문서 링크에서 확인후 다음 글을 확인하시면 더욱 이해하기 편하실 것 같습니다.
+
+### 공식 문서링크
+
+- [zustand 공식문서](https://zustand-demo.pmnd.rs/)
+- [tailwindcss 공식문서](https://tailwindcss.com/)
+- [clsx 공식문서](https://github.com/lukeed/clsx)
+
+## 시작하기
+
+제일 처음 생각해할 것은 어떤 상태에 어떤 컬러를 적용할 지 생각하는 것 입니다.
+
+저는 `light` `dark` `blue` 3가지 상태를 만들었고 색은 각각 `#ffffff`, `#000000`, `#a5d8ff` 로 지정해 주었습니다.
+
+### tailwind.config.js 에 색 적용
+
+상태와 색을 정했으니 이제 실제 사용할 때 사용할 값을 등록해 줘야 합니다. tailwind에는 tailwind.config.js 파일에서 색을 정의할 수 있습니다.
+
+```ts
+// tailwind.config.js
+
+module.exports = {
+  purge: ["./index.html", "./src/**/*.{vue,js,ts,jsx,tsx}"],
+  darkMode: false, // or 'media' or 'class'
+  theme: {
+    extend: {
+      colors: {
+        light: "#ffffff",
+        dark: "#000000",
+        blue: "#a5d8ff",
+      },
+    },
+  },
+  variants: {
+    extend: {},
+  },
+  plugins: [],
+};
+```
+
+### zustand로 themeStore 만들기
+
+zustand로 전역 상태를 관리하기 위해 `theme-store.tsx{:jsx}` 파일을 만들어 아래와 같이 3개의 상태를 관리할 수 있게 만들어 주었습니다.
+
+```tsx
+// theme-store.tsx
+
+import { create } from "zustand";
+
+type ThemeColor = "light" | "dark" | "blue";
+
+interface IThemeStore {
+  theme: ThemeColor;
+  setTheme: (mode: ThemeColor) => void;
+}
+
+export const useThemeStore = create<IThemeStore>()((set) => ({
+  theme: "light",
+  setTheme: (mode: ThemeColor) =>
+    set(() => {
+      return { theme: mode };
+    }),
+}));
+
+export default useThemeStore;
+```
+
+### App.tsx에 컴포넌트 적용하기
+
+이제 App.tsx에 useThemeStore와 clsx를 사용하여 theme을 변환 하도록 만들어 봅시다.
+
+```tsx
+import useThemeStore, { ThemeColor } from "./theme-store";
+import clsx from "clsx";
+
+function App(): React.ReactNode {
+  const { theme, setTheme } = useThemeStore();
+
+  return (
+    <div
+      className={clsx(
+        "w-[100dvw] h-[100dvh] flex items-center justify-center",
+        theme === "light" && "bg-light",
+        theme === "dark" && "bg-dark ",
+        theme === "blue" && "bg-blue "
+      )}
+    >
+      <select
+        defaultValue={theme}
+        onChange={(e) => setTheme(e.target.value as ThemeColor)}
+        className="px-2 py-1 border-2 rounded-lg bg-yellow-300 border-gray-300 text-sm"
+      >
+        <option value={"light"}>🤍 라이트 </option>
+        <option value={"dark"}>🖤 다크</option>
+        <option value={"blue"}>💙 블루</option>
+      </select>
+    </div>
+  );
+}
+
+export default App;
+```
+
+저는 위 코드에서는 useThemeStore 훅으로 theme을 불러오고, select에서 onChange 함수로 사용자가 옵션을 변경했을 때 setTheme을 사용하여 테마를 변경해 주었습니다. 그러면 아래와 같은 결과 화면이 나오게 됩니다.
+
+![리팩토링 전 결과 화면](https://res.cloudinary.com/dxesudkxn/image/upload/v1707841659/blog/ip8lajvkr16eu1zfoq7k.gif)
+
+이렇게 아주 간단하고 쉽게 `themeChange` 앱을 만들었지만 **아직 해결해야 하는 문제**가 있습니다.
+
+## 리팩토링
+
+우리가 지금까지 만든 간단한 `themeChange`앱에는 어떤 문제가 있을까요? 제가 생각할 때 가장 크리티컬한 문제는 바로 아래와 같다고 생각했습니다.
+
+- 새로고침 시 `theme`이 유지가 되지 않는다.
+- `clsx`로 `theme`를 다룰 때 매번 긴 코드를 적어야 한다.
+
+### 새로고침 시 theme 유지하기
+
+새로고침 시 theme을 유지하기 위해서 사용할 수 있는 방법으로는 localStorage를 사용하면 됩니다.
+
+<Callout type="info">
+  <strong>localStorage 란?</strong> 로컬 스토리지는 웹 브라우저에서 제공하는
+  키-값 저장소로, 간단한 데이터를 클라이언트 측에서 영속적으로 저장할 수
+  있습니다. 이는 쿠키보다 용량이 크며, 웹 애플리케이션에서 사용자의 로컬 머신에
+  데이터를 저장하고 불러올 때 유용하게 활용됩니다. 보안 상의 이유로 민감한
+  정보는 저장하지 않는 것이 좋습니다
+</Callout>
+
+```tsx
+// useThemeStore
+export const useThemeStore = create<IThemeStore>()((set) => ({
+  theme: (localStorage.getItem("theme") as ThemeColor) || "light",
+  setTheme: (mode: ThemeColor) =>
+    set(() => {
+      localStorage.setItem("theme", mode);
+      return { theme: mode };
+    }),
+}));
+```
+
+이렇게 바꿔주면 **새로고침 시** 컴포넌트가 초기화 되어 다시 불러올 때 **themeStore에서 먼저 localStorage를 확인하게 되며, 사용자가 theme을 바꿀 때에도 localStorage에 저장**되게 됩니다.
+
+### util 함수 만들어서 theme 관리하기
+
+만약에 여러 개발자가 다양한 컴포넌트에서 `theme`을 사용할 경우 아래처럼 같은 코드를 계속 계속 작성해 줘야 합니다.
+
+```tsx
+<div
+  className={clsx(
+    "w-[100dvw] h-[100dvh] flex items-center justify-center",
+    theme === "light" && "bg-light",
+    theme === "dark" && "bg-dark ",
+    theme === "blue" && "bg-blue "
+  )}
+>컴포넌트 1</div>
+
+<div
+  className={clsx(
+    "w-[100dvw] h-[100dvh] flex items-center justify-center",
+    theme === "light" && "bg-light",
+    theme === "dark" && "bg-dark ",
+    theme === "blue" && "bg-blue "
+  )}
+>컴포넌트 2</div>
+
+<div
+  className={clsx(
+    "w-[100dvw] h-[100dvh] flex items-center justify-center",
+    theme === "light" && "bg-light",
+    theme === "dark" && "bg-dark ",
+    theme === "blue" && "bg-blue "
+  )}
+>컴포넌트 3</div>
+```
+
+따라서 이것을 해결하기 위해서 저는 util.ts 파일을 만들고, combineThemeAndClassNames 함수를 만들어 적용해 보았습니다.
+
+```tsx
+// util.ts
+
+import clsx from "clsx";
+import { ThemeColor } from "./theme-store";
+
+export const combineThemeAndClassNames = (
+  theme: ThemeColor,
+  classNames: string
+) => {
+  return clsx(
+    classNames,
+    theme === "light" && "bg-light text-black ...",
+    theme === "dark" && "bg-dark ",
+    theme === "blue" && "bg-blue "
+  );
+};
+```
+
+이제 `App.tsx`에서는 아래와 같이 사용하면 됩니다!
+
+```tsx
+import useThemeStore, { ThemeColor } from "./theme-store";
+import { combineThemeAndClassNames } from "./util";
+
+function App(): React.ReactNode {
+  const { theme, setTheme } = useThemeStore();
+
+  return (
+    <div
+      className={combineThemeAndClassNames(
+        theme,
+        "w-[100dvw] h-[100dvh] flex items-center justify-center"
+      )}
+    >
+      <select
+        defaultValue={theme}
+        onChange={(e) => setTheme(e.target.value as ThemeColor)}
+        className="px-2 py-1 border-2 rounded-lg bg-yellow-300 border-gray-300 text-sm"
+      >
+        <option value={"light"}>🤍 라이트 </option>
+        <option value={"dark"}>🖤 다크</option>
+        <option value={"blue"}>💙 블루</option>
+      </select>
+    </div>
+  );
+}
+export default App;
+```
+
+## CodeSandbox에서 결과 확인하기
+
+<CodeSandbox
+  src="https://codesandbox.io/p/devbox/react-dark-mode-with-zustand-clsx-tailwind-6llqgt?file=%2Fsrc%2FApp.tsx&embed=1"
+  title="react-dark-mode(with zustand, clsx, tailwind)"
+  allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+  sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+/>
+
+## 결론
+
+사용자가 선호하는 테마를 선택할 수 있도록 하는 것은 애플리케이션의 접근성을 높이는데 도움이 되었습니다. 또한, 이 기능을 도입함으로써 사용자들에게 더 편리하고 맞춤형된 경험을 제공할 수 있게 되었습니다. 그리고 리팩토링을 통해 이 기능을 더욱 유지보수 하기 편하게 만들어 개발자 관점에서도 더욱 편리하게 쓸 수 있었습니다.
+
+프로젝트를 진행하면서 얻은 이러한 경험은 향후의 프로젝트에도 유용하게 활용될 것 같습니다!

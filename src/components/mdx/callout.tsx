@@ -59,7 +59,7 @@ const Callout = (props: CalloutProps) => {
       <div className="absolute top-4 left-4 h-fit">
         <Icon />
       </div>
-      <div className="flex-1 flex text-base prose-p:m-0">
+      <div className="flex-1  flex text-base prose-p:m-0">
         {props.title && (
           <span style={{ fontWeight: "bold" }}>{props.title}</span>
         )}

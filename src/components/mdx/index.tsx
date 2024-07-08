@@ -2,6 +2,7 @@ import { MDXComponents } from "mdx/types";
 import Image from "next/image";
 import Callout from "@/components/mdx/callout";
 import Codepen from "@/components/mdx/codepen";
+import CodeSandbox from "@/components/mdx/code-sandbox";
 
 export const MdxComponents: MDXComponents = {
   a: (props) => (
@@ -37,4 +38,5 @@ export const MdxComponents: MDXComponents = {
   ),
   Callout: Callout,
   CodePen: Codepen,
+  CodeSandbox: CodeSandbox,
 };
