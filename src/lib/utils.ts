@@ -1,4 +1,4 @@
-import { IPost } from "@/types/blog";
+import { IPost, ISearchResult } from "@/types/blog";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -10,7 +10,7 @@ export const extractSurroundingSentences = (
   articles: IPost[],
   keyword: string,
   windowSize = 3
-) => {
+): ISearchResult[] => {
   return articles
     .map((article) => {
       const words = article.content.split(/\s+/); // 단어를 구분하는 정규 표현식
@@ -30,6 +30,7 @@ export const extractSurroundingSentences = (
         category: article.category,
         matchedContents: matchedWords.join(" "),
         url: article.url,
+        createdAt: article.dateString,
       };
     })
     .filter((article) => article.matchedContents !== "");

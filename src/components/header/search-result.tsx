@@ -6,12 +6,10 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { ISearchResult } from "@/types/blog";
-import { highlightWord, removeMarkdown } from "@/lib/utils";
 import { FileXIcon } from "lucide-react";
 
 interface ISearchResultProps {
@@ -55,16 +53,20 @@ const SearchResult: React.FunctionComponent<ISearchResultProps> = ({
               onClick={onClose}
               className="w-full"
             >
-              <Link href={result.url}>
-                <Card className="">
+              <Link href={result.url} className="w-full">
+                <Card className="w-full hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors">
                   <CardHeader>
-                    <h2>{result.title}</h2>
+                    <CardTitle className="uppercase">{result.title}</CardTitle>
+                    <CardDescription className="uppercase flex items-center justify-between w-full font-semibold text-base ">
+                      <span className="text-primary">{result.category}</span>
+                      <time className="text-sm">{result.createdAt}</time>
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div
                       className="w-full break-keep"
                       dangerouslySetInnerHTML={{
-                        __html: result.matchedContents,
+                        __html: result.matchedContents.slice(0, 150) + "...",
                       }}
                     />
                   </CardContent>

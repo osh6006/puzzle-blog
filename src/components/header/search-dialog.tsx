@@ -27,7 +27,9 @@ const SearchDialog: React.FunctionComponent<ISearchDialogProps> = ({
   return (
     <DialogContent className="sm:max-w-[550px] overscroll-y-auto overflow-x-hidden max-h-[500px] px-6 py-6 dark:bg-zinc-900">
       <DialogHeader>
-        <DialogTitle>블로그 내 검색</DialogTitle>
+        <DialogTitle className="text-xl font-semibold">
+          블로그 내 검색
+        </DialogTitle>
       </DialogHeader>
       <Input
         onChange={(e) => handleSearch(e)}

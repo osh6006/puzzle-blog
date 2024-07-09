@@ -1,0 +1,252 @@
+---
+title: react로 SEO 최적화 하기
+date: 2023-04-03
+lastmod: 2024-04-08
+author: ohs6006
+---
+
+개인 프로젝트를 마무리하던 도중 `React` `SEO`를 최적화 하는 부분을 처리하게 되었는데, 생각보다 할게 많고 중요한 내용이 많은 것 같아 `SEO`에 대해 간단한 소개를 하고 저의 프로젝트에서는 스탭별로 어떤 부분을 적용했는지 정리 하였습니다.
+
+<Callout type="info">
+  이 글은 <strong>2024-04-08</strong> 에 업데이트 되었습니다. 또한
+  react-router-v6 6.22.3 버전을 사용하였습니다.
+</Callout>
+
+<Callout type="warn">
+  이 글은 **HTML, CSS , JavaScript, TypeScript, React**에 대한 기본적인 지식을
+  알고 있어야 합니다.
+</Callout>
+
+## SEO란
+
+SEO(검색 엔진 최적화)는 **웹사이트가 검색 결과에 더 잘 보이도록 최적화하는 과정**입니다. 검색 순위 개선이라고도 합니다.
+
+검색 엔진은 웹을 크롤링하면서 페이지에서 페이지로 링크를 따라가고, 찾은 콘텐츠의 색인을 생성합니다. 검색 결과에 보이는 것은 바로 그 색인으로 된 콘텐츠입니다. 크롤러는 일정 규칙을 따르므로, SEO를 진행하며 해당 규칙을 밀접하게 따라가면, 웹사이트가 검색 결과의 최상위에 노출될 가능성이 높아 (전자상거래와 광고라면) 수익으로 연결될 수도 있습니다.
+
+따라서 SEO를 최적화하는 것은 웹 서비스를 제공하는 회사나 온라인 비즈니스에게 매우 중요합니다. SEO에 대해 더 자세한 글은 아래의 링크에서 확인하실 수 있습니다.
+
+[https://www.next-t.co.kr/seo/%EA%B2%80%EC%83%89%EC%97%94%EC%A7%84%EC%B5%9C%EC%A0%81%ED%99%94seo%EB%9E%80-%EB%AC%B4%EC%97%87%EC%9D%B8%EA%B0%80/](https://www.next-t.co.kr/seo/%EA%B2%80%EC%83%89%EC%97%94%EC%A7%84%EC%B5%9C%EC%A0%81%ED%99%94seo%EB%9E%80-%EB%AC%B4%EC%97%87%EC%9D%B8%EA%B0%80/)
+
+## Favicon
+
+favicon은 SEO에 직접적인 영향을 미치는 것은 아니지만, 전체적인 **웹 페이지의 사용자 경험과 브랜드 식별성에 도움**을 줄 수 있어 SEO를 최적하기 전에 먼저 적용해 주었습니다.
+
+CRA로 React 프로젝트를 만들었다면 아래와 같이 favicon을 적용할 수 있습니다.
+
+### Favicon 으로 사용할 이미지 선택하기
+
+favicon 으로 사용할 이미지는 웹 사이트의 비즈니스적으로 맞는 이미지를 사용해야 합니다. 저는 연습용 이미지 이므로 아래와 같이 축구 공 이미지를 사용 하였습니다.
+![Alt text](https://res.cloudinary.com/dxesudkxn/image/upload/v1720481943/blog/React%20SEO/uymgstdldocsrfzeyx0f.png)
+
+### Favicon 이미지 변환하기
+
+위의 이미지는 favicon으로 사용하기엔 너무 크기 때문에 이미지를 적절하게 변환시켜 줘야 합니다. 저는 아래의 사이트에서 이미지를 변환시켜 주었습니다.
+
+[https://realfavicongenerator.net/](https://realfavicongenerator.net/)
+
+![alt text](https://res.cloudinary.com/dxesudkxn/image/upload/v1720481999/blog/React%20SEO/m43hrahx3ks0ge7vwzy5.png)
+사이트 이동 후 위와 같은 화면에서 favicon 이미지를 선택하여 업로드 하고, `Generate your Favicons and HTML code` 버튼을 누르면 압축 파일을 다운로드 받을 수 있습니다.
+
+그리고 Generate 이후 아래의 코드를 복사해 둡니다.
+
+### React에 적용하기
+
+압축 받은 파일을 다운 받았으면 압축을 푼 후 아래의 이미지와 같이 React 프로젝트로 돌아와 public 폴더에서 favicons 라는 폴더를 만들어 압축을 푼 이미지를 넣어 줍니다.
+
+![alt text](https://res.cloudinary.com/dxesudkxn/image/upload/v1720482029/blog/React%20SEO/kq6tma5zzscwwbj4pv3r.png)
+
+그리고 public 폴더 안에 있는 `index.html{:html}` 파일의 `head{:html}`에 위에 복사한 코드를 붙여넣어 줍니다.
+
+```html
+<!-- index.html -->
+
+<head>
+  <link
+    rel="apple-touch-icon"
+    sizes="180x180"
+    href="%PUBLIC_URL%/favicons/apple-touch-icon.png"
+  />
+  <link
+    rel="icon"
+    type="image/png"
+    sizes="32x32"
+    href="%PUBLIC_URL%/favicons/favicon-32x32.png"
+  />
+  <link
+    rel="icon"
+    type="image/png"
+    sizes="16x16"
+    href="%PUBLIC_URL%/favicons/favicon-16x16.png"
+  />
+  <link rel="manifest" href="%PUBLIC_URL%/favicons/site.webmanifest" />
+  <link
+    rel="mask-icon"
+    href="%PUBLIC_URL%/favicons/safari-pinned-tab.svg"
+    color="#635fc7"
+  />
+  <meta name="msapplication-TileColor" content="#da532c" />
+</head>
+```
+
+## Meta tag
+
+메타 태그는 `HTML` 문서의 `<head>{:html}` 섹션에 있는 특별한 태그로, 웹 페이지의 메타 데이터를 정의합니다. 이러한 메타 데이터는 **검색 엔진이나 브라우저가 웹 페이지를 해석하고 표시하는 데 사용**됩니다. 메타 데이터에는 웹 페이지의 제목(title), 설명(description), 키워드(keywords), 저작권 정보, 문서의 언어, 문자 집합 등이 포함될 수 있습니다.
+
+## 리액트에서의 Meta tag
+
+React는 기본적으로 SPA로 구성되었기 때문에, 크롤러가 리액트로 만들어진 사이트를 읽을 때 단 하나의 `index.html`파일만을 읽게 됩니다. 따라서 각각의 페이지의 메타데이터를 읽을 수 없고 한개의 페이지에서만 메타 태그를 적용할 수 밖에 없다는 단점이 있습니다.
+
+### React helmet async 라이브러리 사용하여 단점 해결하기
+
+`react helmet async`는 React 에서 `meta tag`를 동적으로 변경 가능하게 만들 수 있는 라이브러리로 React에서 메타태그를 효과적으로 관리할 수 있습니다.
+
+#### 사용법
+
+```bash
+npm i react-helmet-async
+```
+
+우선 아래와 같이 최상위 폴더에서 `<HelmetProvider/>{:html}`로 감싸 줍니다.
+
+```tsx
+import { HelmetProvider } from "react-helmet-async";
+
+// Create a client
+const queryClient = new QueryClient();
+
+const RootProvider: React.FunctionComponent<IRootProviderProps> = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  return <HelmetProvider>{children}</HelmetProvider>;
+};
+
+export default RootProvider;
+```
+
+그리고 사용할 페이지 컴포넌트에서 `Helmet` 컴포넌트로 사용하면 되는데 공통으로 들어갈 메타태그가 많아서 `<SEO/>{:html}` 라는 컴포넌트를 만들고 메타 데이터를 `props`로 받아 관리하였습니다.
+
+```tsx
+import * as React from "react";
+import { Helmet } from "react-helmet-async";
+
+interface ISEOProps {
+  pageUrl?: string;
+  metaImage?: string;
+  title: string;
+  desc?: string;
+  keywords?: string;
+}
+
+const SEO: React.FunctionComponent<ISEOProps> = ({
+  pageUrl = "/",
+  metaImage = "image:path",
+  title,
+  desc = "something desc",
+  keywords,
+}) => {
+  return (
+    <Helmet>
+      {/* common */}
+      <meta name="description" content={desc} />
+      <meta name="keywords" content={keywords} />
+      <meta property="og:type" content="website" />
+      <meta property="og:title" content={title} />
+      <meta property="og:site_name" content={"your site name"} />
+      <meta property="og:description" content={desc} />
+      <meta property="og:image" content={metaImage} />
+      <meta property="og:url" content={pageUrl} />
+
+      {/* twitter */}
+      <meta name="twitter:title" content={title} />
+      <meta name="twitter:description" content={pageUrl} />
+      <meta name="twitter:image" content={metaImage} />
+
+      {/* face book */}
+      {/* google */}
+      <title>{title}</title>
+    </Helmet>
+  );
+};
+
+export default SEO;
+```
+
+하지만 `react helmet async`을 사용해도 단 하나만 존재하는 `index.html`을 사용하는 `React` 에서는 크롤러가 사이트의 정보를 수집하기 어려울 수 있습니다. 따라서 `react-snap`이라는 라이브러리를 사용하여 이 문제를 해결해야 합니다.
+
+### react-snap
+
+일반적으로 React 애플리케이션은 **클라이언트 측에서 동적으로 렌더링**되기 때문에 초기 로딩 시간이 길어질 수 있습니다. 이는 검색 엔진 최적화(SEO)에도 부정적인 영향을 미칠 수 있습니다. **React Snap은 이러한 문제를 해결하기 위해 React 애플리케이션의 각 페이지를 미리 렌더링하고 정적 HTML 파일로 저장하여 제공**합니다.
+
+<Callout type="danger">
+  하지만 2024-04-09년 현재 react-snap은 약 3~4년째 업데이트 되고 있지 않으며,
+  vercel로 배포할 경우 오류가 발생 하기 때문에 이제는 react로 SEO를 제공하는
+  다른 라이브러리나 메타 태그를 설정할 수 있는 라이브러리가 내제되어 있는
+  Next.js를 사용하는 것이 좋을 것 같습니다.
+</Callout>
+
+### 사용법
+
+```bash
+npm i react-snap
+```
+
+CSR로 React 프로젝트를 생성하셨다면 `index.tsx` 파일에 아래와 같이 코드를 작성해 주고
+
+```tsx
+import { hydrate, render } from 'react-dom';
+
+const container = document.getElementById('root') as HTMLElement;
+const root = ReactDOM.createRoot(container);
+
+if (container.hasChildNodes()) {
+  ReactDOM.hydrateRoot(
+    container,
+    <React.StrictMode>
+      <App.tsx>
+    </React.StrictMode>
+  );
+} else {
+  root.render(
+    <React.StrictMode>
+      <ThemeProvider theme={Theme}>
+      <App.tsx>
+      </ThemeProvider>
+    </React.StrictMode>
+  );
+}
+```
+
+`packge.json` 파일도 아래와 같이 수정해 주면 간단히 사용이 가능합니다. 또한 `include`와 `exclude`를 설정하여 포함시킬 경로 포함시키지 않을 경로를 구분할 수 있습니다.
+
+```json
+"scripts": {
+  ...
+  ...
+  "postbuild": "react-snap",
+},
+"reactSnap": {
+  "include":["/", "/home", "about"],
+  "exclude":["/auth"],
+  // 배포 오류 처리를 위한 코드
+  "puppeteerArgs": [
+    "--no-sandbox",
+    "--disable-setuid-sandbox"
+  ]
+}
+```
+
+하지만 `react-snap`도 동적 라우팅 (id로 라우팅 하는 경우)에는 대응할 수 없기 때문에 완벽한 SEO 설정을 할 수는 없었습니다.
+
+## 결론
+
+오늘은 react에서 SEO를 할 수 있는 방법들에 대해 알아보았고, 사용법 까지 익혀보았습니다. 하지만 정리를 하면 할 수록 react로 SEO처리하는 것은 매우 불편한 점이 많았습니다.
+
+또한 `sitemap`을 생성할 때에도 동적 라우팅에 대해서는 생성하기 어려운 점이 많았고 관련 라이브러리 마저 더 이상 업데이트 되지 않는 것들 뿐이었습니다. 따라서 SEO가 정말 중요한 웹 사이트라면 저는 react 보다는 next.js를 사용하는 편이 더 맞을 것 같다고 느꼈습니다.
+
+## 참고 사이트
+
+[https://www.npmjs.com/package/react-helmet-async](https://www.npmjs.com/package/react-helmet-async)
+[https://www.npmjs.com/package/react-snap](https://www.npmjs.com/package/react-snap)
+[https://velog.io/@chl4842/react-helmet-react-snap-%EC%9C%BC%EB%A1%9C-%EB%A9%94%ED%83%80%EB%8D%B0%EC%9D%B4%ED%84%B0-%EC%B5%9C%EC%A0%81%ED%99%94%ED%95%98%EA%B8%B0](https://velog.io/@chl4842/react-helmet-react-snap-%EC%9C%BC%EB%A1%9C-%EB%A9%94%ED%83%80%EB%8D%B0%EC%9D%B4%ED%84%B0-%EC%B5%9C%EC%A0%81%ED%99%94%ED%95%98%EA%B8%B0)

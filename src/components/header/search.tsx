@@ -20,7 +20,7 @@ const Search = () => {
   dark:bg-background dark:border-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-200
     transition-colors duration-300"
       >
-        <span className="hidden sm:block">제목으로 검색하기</span>
+        <span className="hidden sm:block">퍼즐 조각 검색하기</span>
         <SearchIcon className="w-4 h-4 text-primary" />
       </DialogTrigger>
       <SearchDialog onClose={onClose} />

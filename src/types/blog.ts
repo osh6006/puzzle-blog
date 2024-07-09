@@ -27,4 +27,5 @@ export interface ISearchResult {
   category: string;
   matchedContents: string;
   url: string;
+  createdAt: string;
 }
