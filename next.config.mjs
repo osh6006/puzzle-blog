@@ -20,6 +20,12 @@ const nextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "reactnative.dev",
+        port: "",
+        pathname: "/**",
+      },
     ],
 
     formats: ["image/webp", "image/avif"],

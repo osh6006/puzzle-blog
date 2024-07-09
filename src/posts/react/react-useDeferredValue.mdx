@@ -1,0 +1,229 @@
+---
+title: React에서 useDeferredValue 사용해 보기
+date: 2023-05-22
+lastmod: 2024-05-24
+author: ohs6006
+thumbnail: "https://reactnative.dev/img/logo-og.png"
+---
+
+개인 프로젝트를 리팩토링하기 위해 리액트 공식 문서를 살펴보던 중 `useDeferredValue` 훅을 발견했습니다. 이 훅은 제 프로젝트의 검색 기능의 `useDebounce` 훅과 비슷한 역할을 하는 것 같아, 오늘은 `useDeferredValue`의 기능과 사용법, 그리고 저의 개인 프로젝트에 적용할 수 있을 지를 고민한 내용을 소개하고자 합니다.
+
+<Callout type="info">이 글은 **2024-05-24** 에 업데이트 되었습니다.</Callout>
+
+<Callout type="warn">
+  이 글은 react, typescript 에 대한 기본지식을 알고 있어야 합니다.
+</Callout>
+
+## useDeferredValue 란?
+
+`useDeferredValue`는 UI의 일부 업데이트를 지연시킬 수 있는 React Hook입니다.
+기본적으로 리액트는 아래의 코드처럼 상태 변경이 일어나면 가상의 돔을 비교하여 즉시 리랜더링 시키게 됩니다.
+
+```tsx
+import { useState } from "react";
+
+function Search() {
+  const [query, setQuery] = useState("");
+
+  const handleChange = (e) => {
+    setQuery(e.target.value);
+  };
+
+  return <input value={query} onChange={handleChange} />;
+}
+```
+
+이렇게 값을 즉시 변경하면 좋은 점도 있지만 검색 기능과 같은 값이 변경될 때 마다 `api`를 호출하는 기능을 구현할 경우 사용자 경험 및 서버에 의도지 않은 요청을 계속해서 보낼 수 있게 됩니다.
+
+이러한 문제를 해결하기 위해서 보통은 `useDebounce` 라는 커스텀 훅을 활용하여 `UI`의 일부 업데이트를 지연시킨 후 호출하는 방법을 많이 사용하였습니다. 이 방법은 이전에 제가 블로그에 글을 정리해 두었기 때문에 아래의 링크를 통해 확인하실 수 있습니다.
+
+[react에서 useDebounce 사용하기](https://osh6006.github.io/posts/react%EC%97%90%EC%84%9C-debounce-%EA%B8%B0%EB%8A%A5-%EA%B5%AC%ED%98%84%ED%95%98%EA%B8%B0/)
+
+하지만 `useDeferredValue` 훅을 사용하면 이와 비슷한 기능을 아주 간단하게 구현할 수 있었습니다.
+
+## 사용법
+
+사용법은 매우 간단합니다. `useDeferredValue` 라는 훅을 호출하고 이전에 `state`로 호출 된 값을 넣어주면 됩니다. 단 최 상위에서 호출하고 값을 보낼 때는 자식 컴포넌트에 `props` 로 전달해야 합니다.
+
+```tsx
+import { useState, useDeferredValue } from "react";
+
+function SearchPage() {
+  const [query, setQuery] = useState("");
+  const deferredQuery = useDeferredValue(query);
+
+  const handleChange = (e) => {
+    setQuery(e.target.value);
+  };
+
+  return (
+    <>
+      <input value={query} onChange={handleChange} />
+      <SearchResult searchValue={deferredQuery}>
+    </>
+  );
+}
+```
+
+### 파라미터
+
+- value: 지연시키려는 값으로 어떤 number, string 등 다양한 타입을 사용할 수 있습니다.
+- Canary only option initialValue : 두 번째 파라미터는 Canary 버전에서 사용할 수 있는 값으로 초기화 값을 설정할 수 있습니다.
+
+### 동작원리
+
+예를 들어 사용자가 `<input/>{:html}` 에 **"ab"** 라는 값을 입력할 경우
+
+1. React는 새로운 쿼리 값 "ab"로 즉시 렌더링합니다.
+2. 하지만 deferredQuery는 아직 이전 값("")을 유지합니다.
+3. 백그라운드에서 React는 query와 deferredQuery를 모두 "ab"로 업데이트하려고 합니다.
+4. 이 업데이트가 완료되면 React는 새로운 값을 화면에 표시합니다.
+5. 만약 데이터 로드가 지연되면, React는 새로운 값("ab")으로 렌더링을 시도하지만, 데이터가 준비될 때까지 이전 지연된 값("")을 화면에 계속 표시합니다.
+
+따라서 리액트는 **쿼리 값을 바로 업데이트시키지 않고 살짝 지연시키기 때문에 사용자는 더욱 부드러운 경험을 할 수 있게** 됩니다.
+
+### 이전에 사용하던 커스텀 useDebounce 를 useDeferredValue로 리팩토링 하기
+
+이제 이전에 codesandbox에 `useDebounce`를 이용하여 간단한 나라 이미지 검색 프로젝트를 `useDeferredValue`로 리팩토링 해 보겠습니다.
+
+기존에는 최 상위의 컴포넌트인 `<App.tsx/>{:html}` 에서 `useDebounce` 훅을 불러와서 모든 것을 처리 했지만 `useDeferredValue`는 최 상위 컴포넌트에서 값을 자식 컴포넌트로 전달해야 사용이 가능합니다. 따라서 `<SearchResult/>{:html}`라는 컴포넌트에 값을 `props`로 받아와 api요청을 실행하였습니다.
+
+바뀐 코드는 아래와 같습니다.
+
+```jsx
+// App.tsx
+
+import "./App.css";
+import { useState, useDeferredValue } from "react";
+import BackToTheTop from "./back-to-the-top";
+import SearchResult from "./search-result";
+
+function App() {
+  const [searchValue, setSearchValue] = useState < string > "";
+  // 지연 시킬 값
+  const deferredSearchValue = useDeferredValue(searchValue);
+
+  return (
+    <>
+      <BackToTheTop />
+      <h1>Hello Debounce!</h1>
+      <input
+        type="text"
+        placeholder="나라 이름을 입력하세요 ex) usa"
+        value={searchValue}
+        onChange={(e) => setSearchValue(e.target.value)}
+      />
+      <SearchResult searchValue={deferredSearchValue} />
+    </>
+  );
+}
+
+export default App;
+```
+
+분리된 `<SearchResult/>{:html}` 컴포넌트에서는 `App`컴포넌트로부터 지연된 값을 받아와서 `api`요청을 하는 코드 입니다. 또한 같은 값을 입력했을 경우 리 랜더링을 방지하기 위해 `memo`를 사용하였습니다. 이렇게 하면 `useDebounce`라는 훅을 작성하지 않아도 되고, 컴포넌트를 분리시키는 것도 명확하게 할 수 있어서 좋았습니다.
+
+```jsx
+// SearchResult.tsx
+import { useState, useEffect, memo } from "react";
+
+const SearchResult = memo(({ searchValue }: { searchValue: string }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [imageInfo, setImageInfo] = useState < any > [];
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+
+      if (!searchValue) {
+        setImageInfo([]);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          `https://restcountries.com/v3.1/name/${searchValue}`
+        );
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || "Something went wrong");
+        }
+        const countryData = await res.json();
+        setImageInfo(countryData);
+        setIsError(false);
+      } catch (error) {
+        console.error("API 호출 에러:", error);
+        setImageInfo([]);
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [searchValue]);
+
+  if (isError) {
+    return <h2>Something Error!</h2>;
+  }
+
+  if (isLoading) {
+    return <h2>Loading...</h2>;
+  }
+
+  return (
+    <ul>
+      {imageInfo.length === 0 && (
+        <h2>"{searchValue}"로 검색된 나라가 없습니다!</h2>
+      )}
+      {imageInfo?.map((el: any) => (
+        <img
+          key={el.flags.alt + el.flags.png}
+          src={el.flags.png}
+          alt={el.flags.alt}
+        />
+      ))}
+    </ul>
+  );
+});
+
+export default SearchResult;
+```
+
+### 결과 확인하기
+
+`CodeSandbox`에서 결과를 확인하실 수 있습니다. 다양한 나라를 입력해 보세요
+
+<CodeSandbox
+  src="https://codesandbox.io/p/devbox/hardcore-jang-tckmcp?file=%2Fsrc%2Fsearch-result.tsx&embed=1"
+  title="react-useDeferredValue"
+  allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+  sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+></CodeSandbox>
+
+## useDebounce와의 차이점
+
+`useDebounce` 훅은 목록을 업데이트하기 전에 사용자가 입력을 멈출 때까지(예: 1초 동안) 기다린다는 의미로 사용자가 컴포넌트를 의도적으로 지연시킬 수 있어 매우 편리하게 사용할 수 있습니다. 하지만 리 랜더링 최적화에는 적합하지 않을 수 있습니다.
+
+`useDeferredValue`는 `React` 자체에서 만든 훅이기 때문에 컴포넌트를 지연할 시 렌더링 최적화에 더 적합합니다. 하지만 지연 시간을 임의로 선택할 수 없고 네트워크 요청이 지연되는 시간동안 추가 네트워크 요청을 방지하지는 않다고 공식 문서에 쓰여 있었습니다.
+
+|        특성        |              useDebounce               |                 useDeferredValue                 |
+| :----------------: | :------------------------------------: | :----------------------------------------------: |
+|        목적        |   사용자 입력 후 일정 시간 동안 대기   |       React에서 렌더링 최적화를 위해 제공        |
+|        제공        |      사용자 정의 훅 (custom hook)      |                  React 내장 훅                   |
+|   지연 시간 설정   |             가능 (예: 1초)             |                      불가능                      |
+|   렌더링 최적화    |              덜 최적화됨               |                   더 최적화됨                    |
+| 네트워크 요청 제어 | 입력 지연 동안 추가 네트워크 요청 방지 | 네트워크 요청 지연 시간 동안 추가 요청 방지 안함 |
+|     사용 예시      |     검색 입력 필드, 자동완성 기능      |    복잡한 계산이나 트리거된 UI 업데이트 지연     |
+
+위는 `useDebounce`와 `useDeferredValue`의 차이점을 표로 나타낸 결과 입니다.
+
+## 결론
+
+저의 프로젝트에서는 검색 입력 필드에서 `rapid.api`를 사용하여 데이터를 불러오기 때문에, 불필요한 `API` 요청이 추가 요금으로 이어질 수 있습니다. 따라서 `useDeferredValue`를 사용하기에는 적합하지 않았습니다. 그러나 간단한 내용을 불러오거나, 중요하지 않은 `API` 요청이 없는 경우에는 `useDeferredValue`를 사용하는 것이 좋다는 결론을 내렸습니다.
+
+## 참고 사이트
+
+[https://react.dev/reference/react/useDeferredValue](https://react.dev/reference/react/useDeferredValue)
