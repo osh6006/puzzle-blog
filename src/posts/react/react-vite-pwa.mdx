@@ -1,0 +1,303 @@
+---
+title: Vite React로 PWA 설정하기
+date: 2023-05-15
+lastmod: 2024-05-04
+author: ohs6006
+thumbnail: "https://vite-pwa-org.netlify.app/icon_dark.svg"
+---
+
+이전 글에서는 Create React App(CRA)을 사용해 구축한 React 프로젝트를 Vite로 마이그레이션 하는 과정을 다뤘습니다. Vite는 다양한 플러그인을 지원한다고 언급했었는데, 이번에는 그 중에서도 프로젝트에 Progressive Web App (PWA)를 쉽게 적용할 수 있는 vite-plugin-pwa를 소개하려 합니다.
+
+따라서 오늘은 PWA에 대해 간단히 알아보고 Vite의 `vite-plugin-pwa`를 사용하여 어떻게 PWA를 설정할 수 있는지 알아보겠습니다.
+
+<Callout type="info">이 글은 **2024-05-04** 에 업데이트 되었습니다.</Callout>
+
+<Callout type="warn">
+  이 글은 react, typescript 에 대한 기본지식을 알고 있어야 합니다.
+</Callout>
+
+## PWA란?
+
+PWA(Progressive web apps)은 기존 웹 기술을 활용하여 모바일 앱과 유사한 사용자 경험을 제공하는 애플리케이션입니다.
+
+PWA는 오프라인 작동, 홈 화면 아이콘 추가, 독립적인 창에서 실행되는 기능을 지원하여 네이티브 앱과 비슷한 환경을 제공합니다. 웹의 범용성을 이용하여 **모든 기기에서 접근 가능**하고, **업데이트가 자동으로 적용**되며, 단일 코드베이스로 관리되어 **배포와 유지보수가 간편**합니다.
+
+PWA는 네이티브 앱의 고성능과 오프라인 지원, 기기 통합 같은 장점을 웹 앱의 접근성과 편리한 배포 혜택과 결합했습니다. 이로써 사용자는 어떠한 기기에서도 뛰어난 기능을 경험할 수 있으며, 개발자는 효율적으로 애플리케이션을 제공할 수 있습니다.
+
+### PWA의 구성요소
+
+- **웹 기술**: PWA는 HTML, CSS, JavaScript를 사용하여 개발됩니다.
+- **서비스 워커(Service Worker)**: 서비스 워커는 백그라운드에서 실행되는 스크립트로, 네트워크 요청을 가로채고 오프라인 캐싱, 푸시 알림 등의 기능을 제공합니다. 서비스 워커는 PWA의 핵심 요소 중 하나이며, 오프라인 작동을 가능케 합니다.
+- **웹 앱 매니페스트(Web App Manifest)**: 웹 앱 매니페스트는 PWA의 메타데이터를 정의하는 JSON 파일입니다. 이 파일에는 앱의 이름, 아이콘, 시작 URL 등의 정보가 포함되어 있으며, 홈 화면에 앱을 설치할 때 사용됩니다.
+- **HTTPS**: PWA는 보안을 위해 HTTPS를 사용해야 합니다. HTTPS를 통해 데이터의 안전성과 사용자 신뢰를 보장할 수 있습니다.
+- **Responsiveness**: PWA는 다양한 기기와 화면 크기에 대응하여 반응형 디자인을 적용해야 합니다. 이를 통해 모바일, 태블릿, 데스크톱 등의 다양한 환경에서 최적의 사용자 경험을 제공할 수 있습니다.
+
+위의 설명이 이해가 안되시는 부분이 있을것 같아, 더 많고 좋은 설명 있는 링크를 공유해 드리겠습니다.
+
+[요즘 IT - PWA를 알아야 하는 이유?](https://yozm.wishket.com/magazine/detail/1969/)\
+[위시캣 - 프로그레시브 웹 앱(PWA)이란 무엇이며, 왜 필요한가?](https://blog.wishket.com/%ED%94%84%EB%A1%9C%EA%B7%B8%EB%A0%88%EC%8B%9C%EB%B8%8C-%EC%9B%B9-%EC%95%B1pwa%EC%9D%B4%EB%9E%80-%EB%AC%B4%EC%97%87%EC%9D%B4%EB%A9%B0-%EC%99%9C-%ED%95%84%EC%9A%94%ED%95%9C%EA%B0%80/)\
+[MDN - 프로그레시브 웹 앱 소개](https://developer.mozilla.org/ko/docs/Web/Progressive_web_apps/Tutorials/js13kGames)
+
+PWA에 대해 처음부터 배울 수 있는 사이트 입니다.
+
+[web.dev - PWA 학습하기](https://web.dev/learn/pwa/welcome?hl=ko)
+
+## Vite에서 PWA 사용하기
+
+가장 처음에 언급한 것처럼 Vite 에서는 `vite-plugin-pwa` 플러그인으로 쉽게 PWA를 제어할 수 있습니다. 또한 가독성 좋은 공식 문서를 제공하기 때문에 처음 써보는 저도 쉽게 설정할 수 있었습니다. 현재 이 글은 최신 버전이 아닐 수도 있기 때문에 언제나 공식 문서를 먼저 보시는 것을 추천해 드립니다.
+
+[vite-plugin-pwa 공식문서 바로가기](https://vite-pwa-org.netlify.app/)
+
+### vite-plugin-pwa 설치하기
+
+우선 플러그인을 사용하기 위해서 플러그인을 설치 합니다.
+
+```bash
+npm install -D vite-plugin-pwa
+yarn add -D vite-plugin-pwa
+pnpm add -D vite-plugin-pwa
+```
+
+### vite-plugin 구성하기
+
+vite에서는 플러그인 설정을 하기 위해서 `vite.config.ts` 파일에서 `vite-plugin-pwa` 를 추가해 줘야 합니다.
+
+```ts
+// vite.config.ts
+import react from "@vitejs/plugin-react-swc";
+import { VitePWA } from "vite-plugin-pwa";
+
+export default defineConfig({
+  base: "/",
+  plugins: [react(), VitePWA({})],
+});
+```
+
+### 서비스 워커 및 매니페스트 구성
+
+`vite-plugin-pwa`는 서비스 워커와 매니페스트 파일을 `vite-config.ts`파일에 설정하면 자동으로 생성하고 관리해줍니다.
+
+#### 서비스 워커 설정
+
+서비스 워커는 오프라인 지원 및 앱처럼 동작하는 데 사용 되며 아래와 같은 코드로 설정할 수 있습니다.
+
+```ts
+
+import react from "@vitejs/plugin-react-swc";
+import { VitePWA } from "vite-plugin-pwa";
+
+export default defineConfig({
+  plugins: [
+    VitePWA({
+      react(),
+      injectRegister: "auto",
+    }),
+  ],
+});
+```
+
+위의 코드는`vite-plugin-pwainjectRegister` 플러그인을 사용하여 구성 옵션(injectRegister의 값) 을 사용하여 서비스 워커를 자동으로 등록합니다. 각 옵션 값은 다음과 같습니다.
+
+- **inline**: 애플리케이션 진입점에 인라인된 간단한 등록 스크립트를 삽입합니다.
+- **script**: 서비스 워커를 등록하기 위해 생성된 스크립트에 `head` `src` 속성 이 포함된 `script`태그를 삽입합니다.
+- **script-defer (v0.17.2+부터)**: 서비스 워커를 등록하기 위해 생성된 스크립트에 `defer` `head` `src` 속성 이 포함 `script` 된 태그를 삽입합니다.
+- **null(수동)**: 아무것도 하지 않습니다. 서비스 워커를 직접 등록하거나 플러그인에 의해 노출된 가상 모듈을 가져와야 합니다.
+- **auto(기본값)** : 플러그인에 의해 노출된 가상 모듈을 사용하는지 여부에 따라 아무 작업도 수행하지 않거나 `script`모드 로 전환됩니다.
+
+저는 해당 옵션을 `auto`로 설정했기 때문에 아래와 같은 수동적인 작업을 플러그인이 자동으로 수행해 줍니다.
+
+```html
+<head>
+  <script src="/registerSW.js"></script>
+</head>
+```
+
+```js
+// registerSW.js
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js", { scope: "/" });
+  });
+}
+```
+
+더 자세한 정보는 공식 문서에서 확인해 보세요
+
+#### Entry Point 설정
+
+공식 문서에서는 PWA의 최소 요구조건을 채우기 위해서 `html`에 `endpoint`(`head` 태그)에 최소한 아래와 같은 코드를 작성해야 한다고 합니다.
+
+```html
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>My Awesome App</title>
+  <meta name="description" content="My Awesome App description" />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+  <link rel="mask-icon" href="/mask-icon.svg" color="#FFFFFF" />
+  <meta name="theme-color" content="#ffffff" />
+</head>
+```
+
+따라서 저는 이전에 `jekyll`로 깃허브 블로그를 만들 때 사용했던 사이트를 이용하여 코드를 작성하였습니다.
+
+[파비콘 생성 사이트 바로가기](https://realfavicongenerator.net/)
+
+위의 사이트에서 PWA에 필요한 적절한 값을 선택 후 제일 하단의 `Generate your Favicons and HTML code` 버튼을 누르면 아래와 같은 화면이 나오는데 여기서 1번의 패키지를 다운 받으신 후 압축을 해제하고 3번의 코드를 복사합니다.
+
+![](https://res.cloudinary.com/dxesudkxn/image/upload/v1714875261/blog/React%20Vite%20PWA%20%EC%84%A4%EC%A0%95%ED%95%98%EA%B8%B0/gm6ek2kheflyb483vepd.png)
+
+그리고 압축을 해제한 파일에서 `site.webmanifest` 파일을 제외한 모든 파일을 vite 프로젝트 `public` 폴더로 이동시켜 줍니다.
+
+<Callout type="warn">
+  public 폴더에서도 제일 상단에 위치해야 합니다. 그 안에 폴더를 만들고 넣었으나
+  적용이 안되었습니다.
+</Callout>
+
+그리고 나서 `index.html` 의 `<head/>`안에 3번에 복사했던 코드를 작성합니다.
+
+```html
+<head>
+  <!-->...rest<!-->
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#635fc7" />
+  <meta name="msapplication-TileColor" content="#da532c" />
+  <meta name="theme-color" content="#ffffff" />
+</head>
+```
+
+#### Manifest 설정
+
+원래는 보통 `manifest`파일을 `public`폴더에 위치하여 `pwa`를 구성하지만 `vite-pwa`에서는 그럴 필요없이 `vite.config.ts` 파일에서 설정할 수 있습니다.
+
+```ts
+
+import react from "@vitejs/plugin-react-swc";
+import { VitePWA } from "vite-plugin-pwa";
+
+export default defineConfig({
+  plugins: [
+    VitePWA({
+      react(),
+      injectRegister: "auto",
+      includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
+      manifest: {
+        name: "프로젝트 이름",
+        short_name: "짧은 프로젝트 이름",
+        description:"프로젝트 설명"
+        icons: [
+          {
+            src: "/android-chrome-192x192.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
+          {
+            src: "/android-chrome-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+          },
+          {
+            src: "/android-chrome-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any",
+          },
+          {
+            src: "/android-chrome-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
+          },
+        ],
+        theme_color: "#ffffff",
+        background_color: "#ffffff",
+        display: "standalone",
+      },
+    }),
+  ],
+});
+
+```
+
+## 배포 환경 설정
+
+`vite-pwa` 는 다양한 배포 환경(aws, Netlify, AWS Amplify, Vercel, NGINX 등) 에서 사용할 수 있도록 설정할 수 있습니다. 현재 저는 `vercel` 로 프로젝트 배포를 완료 했기에 `vercel` 기준으로 설명 하였습니다.
+
+사용 방법은 공식 문서에서 제시한대로 `vercel.json`파일에서 `header`와 `rewrites` 설정을 아래와 같이 해 주시면 됩니다.
+
+```json
+{
+  "headers": [
+    {
+      "source": "/(.*).html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/manifest.webmanifest",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/manifest+json"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+```
+
+### 결론
+
+오늘은 모든 플랫폼과 기기에서 일관된 경험을 제공하는 PWA에 대해서 이론적으로 공부할 수 있었고, 또 이전에 설정했던 vite에서 어떻게 PWA를 설정하는지에 대해서도 배울 수 있었습니다. 하지만 제가 사용한 기술들은 극히 일부분에 지나지 않습니다. `vite-pwa`에서는 더 다양한 옵션으로 PWA를 제어할 수 있으니 꼭 사용해보시길 권장합니다.
+
+### 참고 사이트
+
+[https://vite-pwa-org.netlify.app/guide/](https://vite-pwa-org.netlify.app/guide/)\
