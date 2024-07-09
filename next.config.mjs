@@ -8,7 +8,20 @@ const nextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "ko.vitejs.dev",
+        port: "",
+        pathname: "/**",
+      },
     ],
+
     formats: ["image/webp", "image/avif"],
   },
 };

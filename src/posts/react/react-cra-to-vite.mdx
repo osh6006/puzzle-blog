@@ -1,0 +1,210 @@
+---
+title: create-react-app에서 vite-react로 마이그레이션 한 이유
+date: 2023-05-08
+lastmod: 2024-04-29
+author: ohs6006
+thumbnail: "https://ko.vitejs.dev/logo.svg"
+---
+
+CRA(Create React App)은 React 개발자들 사이에서 가장 널리 사용되는 React 빌드 방법 중 하나입니다. 그러나 최근 다른 프로젝트에서 Vite로 빌드된 React 애플리케이션을 설정했는데 이 때, CRA와 비교하여 좋은 점이 훨씬 많아 Vite로 마이그래이션 하기로 결정했습니다.
+
+오늘은 CRA와 Vite의 간단한 비교와 Vite로 마이그래이션 하게 된 이유, CRA에서 Vite로 마이그래이션 하는 법에 대해서 소개해 보겠습니다.
+
+<Callout type="info">이 글은 **2024-04-30** 에 업데이트 되었습니다.</Callout>
+
+<Callout type="warn">
+  이 글을 읽기 전 https://enjoydev.life/blog/frontend/4-module-bundler
+  사이트에서 번들러에 대한 설명을 읽고 오면 조금 도움이 되실 것 같습니다.
+</Callout>
+
+## CRA와 Vite
+
+### CRA (Create React App)
+
+`CRA(Create React App)` 는 가장 널리 사용되는 번들러 중 하나인 Webpack을 기반으로 React 애플리케이션을 쉽게 설정하고 빌드합니다. CRA를 사용하면 개발자는 복잡한 설정을 신경쓰지 않고도 React 애플리케이션을 빠르게 시작할 수 있습니다.
+
+### 주요 특징
+
+- Zero Configuration: CRA는 사용자를 위한 기본 설정을 제공합니다. 따라서 개발자는 Webpack, Babel 및 기타 도구의 설정을 수동으로 구성할 필요가 없습니다.
+- Webpack 및 Babel 기반: CRA는 내부적으로 Webpack과 Babel을 사용하여 애플리케이션을 번들링하고 변환합니다. 이는 다양한 파일 형식 및 모듈을 브라우저에서 이해할 수 있는 형태로 변환합니다.
+- React 스크립트 템플릿 제공: CRA는 사용자가 바로 시작할 수 있도록 몇 가지 사전 구성된 React 스크립트 템플릿을 제공합니다. 예를 들어, TypeScript, Sass 등을 지원하는 템플릿을 선택할 수 있습니다.
+- 환경 분할 (Code Splitting): CRA는 코드를 자동으로 분할하여 초기 로드 시간을 최적화합니다. 이는 사용자가 애플리케이션에 처음 접근할 때 필요한 코드만 로드되고, 후속 페이지 전환이나 요청 시 추가 코드가 동적으로 로드됩니다.
+- 편리한 개발 서버: CRA는 개발 서버를 제공하여 실시간으로 변경 사항을 반영하고 빠르게 개발할 수 있도록 합니다. 또한 개발 서버는 HMR (Hot Module Replacement)을 지원하여 코드 수정 시 즉시 변경 사항을 반영합니다.
+
+### Vite
+
+Vite는 현대 브라우저가 지원하는 ES 모듈 을 활용하여 개발 중에는 서버사이드에서 번들링 없이 모듈을 직접 제공합니다. 이 접근 방식은 전통적인 번들링 도구보다 훨씬 빠른 시작 시간과 업데이트 반응 시간을 제공합니다.
+
+### 주요 특징
+
+- ES 모듈 기반의 빠른 콜드 스타트: Vite 는 개발 모드에서 브라우저의 네이티브 ES 모듈 로딩 기능을 활용하여 초기 로딩 시간을 크게 단축합니다. 필요한 파일만 서버에서 바로 불러올 수 있기 때문에, 전체 애플리케이션을 번들링할 필요가 없습니다.
+- 빠른 HMR (Hot Module Replacement): Vite 는 개발 중에 HMR을 제공하여 수정된 모듈만 다시 로드합니다. 이 기능은 개발자가 코드를 변경할 때 브라우저가 전체 페이지를 새로 고칠 필요 없이 변경된 부분만 즉시 반영할 수 있게 합니다.
+- 플러그인 시스템: Vite 는 강력한 플러그인 시스템을 제공하며, 이는 Rollup의 플러그인 시스템과 호환됩니다. 이를 통해 사용자는 필요에 따라 기능을 추가하고 확장할 수 있습니다.
+- 통합된 구성: Vite는 프로젝트 설정을 간단하게 하면서도 필요에 따라 상세한 구성이 가능합니다. Vite 구성 파일은 명확하고 이해하기 쉬운 API를 제공합니다.
+- 멀티 프레임워크 호환성: Vite는 Vue, React, Svelte, Lit 등 다양한 프론트엔드 프레임워크를 지원합니다. 이는 프레임워크에 구애받지 않고 Vite를 사용할 수 있음을 의미합니다.
+
+## Vite로 마이그래이션 하게 된 이유
+
+### 빌드 속도 차이
+
+빌드 속도 차이는 제가 Vite로 마이그래이션 하게 된 결정적 이유라고 할 수 있습니다. CRA로 프로젝트를 만들어 배포하게 되면 Vite로 만든 프로젝트보다 훨씬 느리게 빌드됩니다. 그 이유는 **CRA 는 단일 스레드를 사용하는 Javascript 기반의 Webpack 을 이용하여 빌드하는 반면, Vite는 Go기반의 언어인 ES 모듈 을 사용하여 빌드하기 때문**입니다.
+
+이는 Github Actions, Render와 같이 빌드 시간에 따라 요금을 책정하는 경우에 유리하게 작용할 수 있습니다.
+
+또한 Vite는 로컬 서버마저 훨씬 빠르게 시작됩니다. **기존의 번들러 기반으로 개발을 진행할 때, 소스 코드를 업데이트 하게 되면 번들링 과정을 다시 거쳐야 했었습니다. 따라서 서비스가 커질수록 소스 코드 갱신 시간 또한 선형적으로 증가하게 됩니다.** 이 문제를 해결하기 위해서 CRA 에서도 HMR(Hot Module Replacement)을 이용하여 해결하려고 했지만 Javascript기반의 HMR은 역시 한계가 있었습니다.
+
+Vite에서는 HMR마저도 ES 모듈을 이용하고 있고 어떤 모듈이 수정되면 Vite는 그저 수정된 모듈과 관련된 부분만을 교체할 뿐이고, 브라우저에서 해당 모듈을 요청하면 교체된 모듈을 전달할 뿐입니다. 전 과정에서 완벽하게 ES모듈을 이용하기에, 앱 사이즈가 커져도 HMR을 포함한 갱신 시간에는 영향을 끼치지 않습니다.
+
+|  CRA -> Vite  |    프로젝트 1    |    프로젝트 2    |
+| :-----------: | :--------------: | :--------------: |
+| 프로덕션 빌드 | 28.4초 -> 16.1초 | 107초 -> 36.2초  |
+|  개발자 모드  | 4.5초 > 0.390초  | 7.4초 -> 0.365초 |
+|   핫 리로딩   |  5초 -> 수십 ms  |   4 -> 수십 ms   |
+
+위의 표는 레퍼런스 사이트에서 CRA에서 Vite로 마이그레이션 했을 경우 빌드 속도와 로컬 서버속도, 핫리로딩 속도를 비교한 표 입니다. 위 표를 통해 알 수 있듯이 프로젝트가 커질수록 속도 차이가 더 많이 나는 것을 확인할 수 있었습니다.
+
+### 유연성
+
+사용자는 CRA에서 제공하는 환경에서 미리 정의된 규칙을 따라야 하기 때문에 CRA가 어떤 기능을 지원하지 않으면 사용자는 미리 설정된 웹팩을 eject하여 다시 설정해야 하기 때문에 매우 불편할 수 있습니다.
+
+반면에 Vite는 Rollup.js을 기반으로한 플러그인으로 빠르게 추가할 수 있고 공식문서에서 플러그인을 적용하는 방법도 쉽게 알려주고 있기 때문에 사용자가 원하는 플러그인을 쉽게 추가할 수 있었습니다.
+
+[공식 문서 플러그인 바로가기](https://ko.vitejs.dev/guide/using-plugins.html)
+
+### 안정화 & 대중성
+
+이전에는 Vite 가 나온지 얼마 되지 않았기 때문에 CRA 에 비해 안정화가 되어있지 않다고 쓰지 않는 사람들도 많았습니다. 하지만 지금은 npm 에서는 주당 평균 250만 다운로드되고 있고 업데이트는 평균 한 달에 한 번 릴리스되며 커뮤니티에서는 지속적으로 수정 작업을 진행하고 있기 때문에(현재 최신 버전은 `V5` 입니다) 이제는 CRA에서 Vite
+로 넘어가도 된다고 판단 하습니다.
+
+## 마이그래이션 방법
+
+## Vite 다운 및 CRA 제거
+
+기존 CRA에서 Vite로 마이그래이션 하려면 가장먼저 CRA를 삭제하고 Vite 플러그인을 다운로드 해야 합니다. 따라서 아래의 명령어를 입력해 주세요 그리고 더 많은 플러그 인을 사용하려면 아래의 공식 문서에서 확인하시기 바랍니다.
+
+```bash
+# Vite 와 Vite 플러그인 다운
+npm i --save-dev vite @vitejs/plugin-react-swc vite-tsconfig-paths
+
+# CRA 삭제
+npm uninstall react-scripts
+```
+
+### @vitejs/plugin-react-swc
+
+개발 중에 Babel을 SWC로 대체합니다. 빌드하는 동안 플러그인을 사용할 때는 SWC+esbuild가 사용되고 그렇지 않은 경우에만 esbuild가 사용됩니다. 비표준 React 확장이 필요하지 않은 대규모 프로젝트의 경우 콜드 스타트 ​​및 HMR(핫 모듈 교체)이 훨씬 더 빨라질 수 있습니다.
+
+### vite-tsconfig-paths
+
+파일에 절대 경로를 설정할 수 있는 플러그인 입니다.
+
+### Index.html 파일 이동 및 %PUBLIC_URL% 경로 수정
+
+create-react-app은 `public/index.html`을 기본 진입점으로 사용하는 반면 Vite는 루트 수준에서 `index.html`을 찾습니다. 따라서 `index.html`을 루트 디렉터리로 이동하고 더이상 `%PUBLIC_URL%`은 사용하지 않기 때문에 `index.html`에 있는 %PUBLIC_URL%을 삭제해 줍니다.
+
+```html
+<!-- 삭제 전 -->
+<link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+
+<!-- 삭제 후 -->
+<link rel="icon" href="/favicon.ico" />
+```
+
+### vite.config.ts 추가
+
+Vite의 플러그인과 전역설정을 할 수 있게 `vite.config.ts`를 추가합니다 저는 아래와 같이 추가했습니다. 또한 저는 `tailwind css`를 사용하고 있었기 때문에 `tailwindcss`도 설정해 주었습니다.
+
+```ts
+import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react-swc";
+import tsconfigPaths from "vite-tsconfig-paths";
+import tailwindcss from "tailwindcss";
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  base: "/",
+  plugins: [react(), tsconfigPaths()],
+  css: {
+    postcss: {
+      plugins: [tailwindcss()],
+    },
+  },
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: "./src/setupTests.ts",
+    css: true,
+    reporters: ["verbose"],
+    coverage: {
+      reporter: ["text", "json", "html"],
+      include: ["src/**/*"],
+      exclude: [],
+    },
+  },
+});
+```
+
+### tsconfig.json 재 설정
+
+Vite 에 맞는 Typescript 설정을 위해 `tsconfig.json`을 재 설정 하였습니다.
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "target": "ESNext",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "noFallthroughCasesInSwitch": true,
+    "jsx": "react-jsx",
+    "types": ["vite/client", "vite-plugin-svgr/client"]
+  },
+  "include": ["src"]
+}
+```
+
+### Vite script 추가
+
+Vite는 CRA와 스크립트 명령어가 다르기 때문에 `packge.json`의 스크립트 명령어를 아래와 같이 수정하였습니다.
+
+```json
+"scripts": {
+  "start": "vite",
+  "build": "tsc && vite build",
+  "serve": "vite preview"
+}
+```
+
+### ENV파일 수정
+
+마지막으로 Vite와 CRA는 `env`파일을 불러올 때 사용하는 명령어가 살짝 다르기 때문에 수정해 주었습니다.
+
+```env
+VITE_API_KEY=나의 비밀 키
+```
+
+```tsx
+const BASE_URL = import.meta.env.VITE_API_KEY;
+```
+
+## 결론
+
+CRA에서 Vite로의 전환은 여러 이점을 제공합니다. Vite는 빠른 빌드 속도, 향상된 핫 모듈 교체(HMR), 그리고 확장성 및 커스터마이징이 용이한 플러그인 시스템을 통해 개발자 경험을 크게 향상시킵니다. 또한, Vite의 안정성과 대중성이 시간이 지남에 따라 증가함에 따라, 이제는 많은 개발자들이 Vite를 안심하고 선택할 수 있습니다. 따라서 프로젝트의 요구 사항과 팀의 선호도에 따라 CRA에서 Vite로의 마이그레이션을 고려해 보시면 좋을 것 같습니다.
+
+## 참고 사이트
+
+https://ko.vitejs.dev/guide/
+https://makimo.com/blog/why-we-use-vite-instead-of-create-react-app/
+https://junghan92.medium.com/%EB%B2%88%EC%97%AD-create-react-app-%EA%B6%8C%EC%9E%A5%EC%9D%84-vite%EB%A1%9C-%EB%8C%80%EC%B2%B4-pr-%EB%8C%80%ED%95%9C-dan-abramov%EC%9D%98-%EB%8B%B5%EB%B3%80-3050b5678ac8
+https://blog.bitsrc.io/vite-vs-create-react-app-326e8cc2c46b
+https://dev.to/henriquejensen/migrating-from-create-react-app-to-vite-a-quick-and-easy-guide-5e72
