@@ -1,0 +1,119 @@
+---
+title: Nextjs 에서 fetch 사용하여 데이터 가져오기
+date: 2024-03-04
+lastmod: 2024-03-04
+author: ohs6006
+thumbnail: ""
+---
+
+팀 프로젝트 작업 중 기본적인 UI 구성이 완료되었으므로, 이제 API 연동을 시작하려고 합니다. 이전에는 axios와 같은 라이브러리를 사용했지만, 이번 프로젝트에서는 Next.js를 사용하고 있기 때문에, 공식 문서에서 권장하는 fetch를 사용하여 데이터를 가져오는 방법을 알아보겠습니다.
+
+<Callout type="info">이 글은 **2024-06-23** 에 업데이트 되었습니다.</Callout>
+
+<Callout type="warn">
+  이 글은 **HTML, CSS , JavaScript, TypeScript, React, Next.js**에 대한 기본적인
+  지식을 알고 있어야 합니다.
+</Callout>
+
+## Next.js에서의 fetch
+
+Next.js에서의 fetch는 기존에 웹에서 제공하는 fetch를 확장한 라이브러리로 웹에서 제공하는 fetch와 동일한 방식으로 사용할 수 있지만 **Next.js에서는 추가적인 옵션들로 api 요청을 캐시하여 사용할 수 있습니다.**
+
+> **Cache란 무엇인가요??**
+> Cache는 브라우저나 서버가 자원을 저장하고 재사용하는 방법을 의미합니다. 이를 통해 동일한 데이터를 여러 번 요청할 때, 매번 서버에서 새로 가져오는 대신 저장된 데이터를 사용하여 네트워크 트래픽을 줄이고 응답 속도를 높일 수 있습니다.
+
+### Cheche 옵션
+
+cheche 옵션으로는 `force-cache`, `no-store` 두 가지 옵션이 있습니다. 아래는 옵션의 사용법과 간단한 설명입니다.
+
+```ts
+fetch(`https://...`, { cache: "force-cache" | "no-store" });
+```
+
+- `force-cache`(default)
+
+  - 일치하는 리소스가 있으면 캐시에서 재사용 합니다.
+  - 일치하는 리소스가 없거나 오래된 리소스일 경우 원격 서버에서 리소르를 가져와 캐시를 업데이트 합니다.
+
+- `no-store`
+  - 캐시를 사용하지 않고 요청할 때마다 서버에서 리소스를 가져옵니다.
+
+### next.revalidate 옵션
+
+revalidate는 리소스의 캐시 수명(초)을 설정합니다
+
+```ts
+fetch(`https://...`, { next: { revalidate: false | 0 | number } });
+```
+
+- `false`
+  리소스를 무기한 캐시합니다. HTTP 캐시는 시간이 지남에 따라 오래된 리소스를 제거시킬 수 있습니다.
+- `0`
+  리소스가 캐시되지 않습니다.
+- `number`
+  리소스의 캐시 수명을 `number` 초 단위로 설정합니다.
+
+### next.tags 옵션
+
+리소스의 캐시 태그를 설정합니다. 그 다음 사용자가 원할 때 태그를 사용하여 데이터를 재 검증할 수 있습니다.
+
+태그의 길이는 최대 256자이고 최대 태그 항목은 64개 입니다.
+
+재검증 요청 시 `revalidateTag(태그명)` 함수를 사용하면 됩니다.
+
+```ts
+fetch(`https://...`, { next: { tags: ["collection"] } });
+
+// 재검증 요청 시
+revalidateTag(`collection`);
+```
+
+## 프로젝트에 적용하기
+
+제가 사용하고 있던 프로젝트에서는 사용자가 포스트를 생성할 때 서버에서 데이터를 가져오고 있었습니다. 이를 위해서는 서버에서 데이터를 가져오는 요청을 하고, 캐시를 업데이트 해야 합니다.
+따라서 아래의 코드를 추가하여 사용하였습니다.
+
+```ts
+// api
+export const getPostList = async () => {
+  const response = await fetch(`요청 경로`, {
+    cache: "no-store",
+    next: {
+      tags: ["post"],
+    },
+  });
+
+  return response.json();
+};
+
+export const createPost = async (postData) => {
+  const response = await fetch(`요청 경로`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(postData),
+  });
+
+  revalidateTag("post");
+  return response.json();
+};
+
+export const deleteQuestion = async (id: number) => {
+  await fetch(`요청 경로`, {
+    method: "DELETE",
+  });
+
+  revalidateTag("post");
+};
+```
+
+## 결론
+
+Next.js를 사용하면서 느끼는 가장 큰 매력 중 하나는 프로젝트 구성을 매우 쉽게 할 수 있도록 다양한 기능을 제공한다는 점입니다. 오늘은 그 중에서도 데이터를 손쉽게 불러오고 캐싱할 수 있는 fetch를 사용하는 방법을 알아보았습니다.
+
+fetch는 기본 자바스크립트 문법이기 때문에 누구나 쉽게 사용할 수 있으며, Next.js에서도 이를 확장한 버전으로 제공하기 때문에 별다른 학습곡선 없이 사용할 수 있었습니다.
+
+## 참고 사이트
+
+[https://nextjs.org/docs/app/api-reference/functions/fetch](https://nextjs.org/docs/app/api-reference/functions/fetch)
