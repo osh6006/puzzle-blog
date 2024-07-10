@@ -38,7 +38,14 @@ const nextConfig = {
         port: "",
         pathname: "/_build/assets/*",
       },
+      {
+        protocol: "https",
+        hostname: "nextjs.org",
+        port: "",
+        pathname: "/**",
+      },
     ],
+
     formats: ["image/webp", "image/avif"],
   },
 };
