@@ -32,6 +32,12 @@ const nextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "tanstack.com",
+        port: "",
+        pathname: "/_build/assets/*",
+      },
     ],
     formats: ["image/webp", "image/avif"],
   },

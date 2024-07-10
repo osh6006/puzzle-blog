@@ -15,7 +15,7 @@ const AlternativeThumbnail: React.FunctionComponent<
         className
       )}
     >
-      <ApertureIcon size={200} />
+      <ApertureIcon size={250} />
     </div>
   );
 };

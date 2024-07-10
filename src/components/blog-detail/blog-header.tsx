@@ -37,13 +37,14 @@ const BlogHeader: React.FunctionComponent<IBlogHeaderProps> = ({
         </span>
       </div>
       {thumbnail ? (
-        <div className="relative rounded-md overflow-hidden">
+        <div className="relative rounded-md w-full min-h-[400px] overflow-hidden">
           <Image
             alt="thumbnail"
             src={thumbnail}
-            width={750}
-            height={350}
-            className="w-full h-[350px] aspect-video"
+            fill
+            style={{
+              objectFit: "scale-down",
+            }}
             unoptimized
           />
         </div>

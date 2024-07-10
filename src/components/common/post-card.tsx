@@ -35,7 +35,7 @@ const PostCard: React.FunctionComponent<IPostCardProps> = ({
             alt="postThumbnail"
             fill
             style={{
-              backgroundSize: "cover",
+              objectFit: "contain",
             }}
             className="group-hover:scale-105 transition-all"
           />
