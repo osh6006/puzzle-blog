@@ -1,0 +1,488 @@
+---
+title: React Query Key Factory로 QueryKey 관리하기
+date: 2023-06-06
+lastmod: 2024-06-11
+author: ohs6006
+thumbnail: "https://camo.githubusercontent.com/2bf556061d47e4f7b1a15d5025be9c5598ce0b67b4e91127fa581945d30768f6/68747470733a2f2f696d616765732e656d6f6a6974657272612e636f6d2f6d6f7a696c6c612f35313270782f31663365642e706e67"
+---
+
+현재 개인 프로젝트는 외부 api 요청을 tanstack-query를 이용하여 요청하고 있었습니다. 이에 따라 tanstack-query 공식 문서를 보면서 어떤 새로운 기능을 찾아서 리팩토링할까 고민하던 중 공식 문서의 COMMUNITY RESOURCES 탭에 있는 `Query Key factory` 라는 라이브러리를 찾게 되었는데 이 도구로 `query key`를 효율적으로 관리할 수 있을 것 같아 오늘은 Query Key Factory에 대한 간단한 소개와 사용법, 그리고 개인 프로젝트에 어떻게 적용했는지를 소개해 보겠습니다.
+
+<Callout type="info">이 글은 **2024-06-11** 에 업데이트 되었습니다.</Callout>
+
+<Callout type="warn">
+  이 글은 **HTML, CSS , JavaScript, TypeScript, React, Tanstack-query**에 대한
+  기본적인 지식을 알고 있어야 합니다.
+</Callout>
+
+## Query Key factory 란
+
+**Query Key factory**는 tanstack-query와 함께 사용되는 라이브러리로, tanstack-query 사용하는 **query key를 효율적으로 생성하고 관리**할 수 있도록 도와줍니다.
+
+### 주요 기능
+
+- 자동 Query Key 생성: 객체와 메소드 체인을 사용하여 일관되고 직관적인 방식으로 query key를 생성할 수 있습니다.
+- 가독성 향상: 명확하고 구조화된 방식으로 query key를 정의하여 코드의 가독성을 높입니다.
+- 유지보수 용이: query key의 생성을 중앙 집중식으로 관리하여, 변경 사항을 쉽게 적용할 수 있습니다.
+
+## 기본 사용법
+
+우선 터미널에서 tanstack-query 와 query-key-factory를 설치합니다.
+
+```bash
+# tanstack query
+npm i @tanstack/react-query
+
+# query-key-factory
+npm install @lukemorales/query-key-factory
+```
+
+### 쿼리 작성하기
+
+그리고 쿼리 키를 작성 할 파일에서 query-key-factory를 이용하여 쿼리를 작성합니다.
+
+```ts
+import { createQueryKeyStore } from "@lukemorales/query-key-factory";
+
+export const queries = createQueryKeyStore({
+  users: {
+    all: null,
+    detail: (userId: string) => ({
+      queryKey: [userId],
+      queryFn: () => api.getUser(userId),
+    }),
+  },
+});
+```
+
+### 한 곳에 머지하기
+
+또한 각각 따로 작성한 파일을 한 곳에서 merge 하는 것도 가능합니다.
+
+```ts
+import {
+  createQueryKeys,
+  mergeQueryKeys,
+} from "@lukemorales/query-key-factory";
+
+// queries/users.ts
+export const users = createQueryKeys("users", {
+  all: null,
+  detail: (userId: string) => ({
+    queryKey: [userId],
+    queryFn: () => api.getUser(userId),
+  }),
+});
+
+// queries/todos.ts
+export const todos = createQueryKeys("todos", {
+  detail: (todoId: string) => [todoId],
+  list: (filters: TodoFilters) => ({
+    queryKey: [{ filters }],
+    queryFn: (ctx) => api.getTodos({ filters, page: ctx.pageParam }),
+    contextQueries: {
+      search: (query: string, limit = 15) => ({
+        queryKey: [query, limit],
+        queryFn: (ctx) =>
+          api.getSearchTodos({
+            page: ctx.pageParam,
+            filters,
+            limit,
+            query,
+          }),
+      }),
+    },
+  }),
+});
+// queries/index.ts
+export const queries = mergeQueryKeys(users, todos);
+```
+
+### 사용하기
+
+이제 위의 `query-factory`에서 `hook`을 사용하여 간단하게 꺼내 쓰면 됩니다.
+
+```ts
+import { queries } from "../queries";
+import { useQuery } from "@tanstack/react-query";
+
+export function useUsers() {
+  return useQuery({
+    ...queries.users.all,
+    queryFn: () => api.getUsers(),
+  });
+}
+
+export function useUserDetail(id: string) {
+  return useQuery(queries.users.detail(id));
+}
+```
+
+```ts
+// components/UserList.tsx
+import { useQuery } from "@tanstack/react-query";
+import { useUsers } from "../useUser";
+
+export function UserList() {
+  const { data, error, isLoading } = useUsers();
+  // 컴포넌트 코드...
+}
+```
+
+## 응용 사용법
+
+### 컨텍스트 기반 쿼리 사용
+
+컨텍스트 기반 쿼리를 사용하면 동시에 2가지의 쿼리를 가져올 수 있습니다. 예를 들어 특정 사용자의 상세 정보와 그 사용자가 좋아하는 항목을 동시에 가져오는 경우는 아래와 같이 작성이 가능합니다.
+
+```ts
+// queries/users.ts
+export const users = createQueryKeys("users", {
+  detail: (userId: string) => ({
+    queryKey: [userId],
+    queryFn: () => api.getUser(userId),
+    contextQueries: {
+      likes: {
+        queryKey: null,
+        queryFn: () => api.getUserLikes(userId),
+      },
+    },
+  }),
+});
+
+// components/UserLikes.tsx
+import { useQuery } from "@tanstack/react-query";
+import { queries } from "../queries";
+
+export function UserLikes({ userId }) {
+  const { data, error, isLoading } = useQuery(
+    queries.users.detail(userId)._ctx.likes
+  );
+  // 컴포넌트 코드...
+}
+```
+
+### 쿼리키 무효화
+
+추가로 쿼리 키를 무효화 하려면 아래와 같이 하면 됩니다.
+
+```tsx
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { queries } from "../queries";
+
+export function useUpdateUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation(updateUser, {
+    onSuccess(updatedUser) {
+      // 업데이트된 사용자의 상세 정보 무효화
+      queryClient.invalidateQueries(
+        queries.users.detail(updatedUser.id).queryKey
+      );
+
+      // 사용자 목록 무효화
+      queryClient.invalidateQueries(queries.users.all.queryKey);
+    },
+  });
+}
+```
+
+이 밖에도 다양한 사용법이 있으니 공식 문서에 가서 확인해 보시길 바랍니다.
+
+[query-key-factory 공식 문서 바로가기](https://github.com/lukemorales/query-key-factory?tab=readme-ov-file#-install)
+
+## 간단한 프로젝트 만들기
+
+이제 간단한 기본 사용법을 알았으니 진짜 실제로 되는지 한번 테스트 해 보겠습니다.
+간단하게 `json` 파일을 만들어 랜덤 유저 데이터를 넣고 실제로 api를 작성해 보았습니다.
+
+<Callout type="warn">
+  code sandbox 로 api 요청을 하면 cors 에러가 발생하기 때문에 (예전에는 잘
+  됐는데..) 간단한 json파일 데이터를 생성하였습니다.
+</Callout>
+
+## api 요청 함수 만들기
+
+간단하게 불러오는 api 파일을 작성해 줍니다.
+
+```ts
+export const api = {
+  getUsers: async () => {
+    // 사용자 목록을 가져오는 API 호출
+    const response = await fetch("/users.json");
+    console.log(response);
+    const data = await response.json();
+    return data;
+  },
+};
+```
+
+## query factory 만들기
+
+이제 query factory 에 api를 등록합니다.
+
+```tsx
+import { createQueryKeyStore } from "@lukemorales/query-key-factory";
+import { api } from "./api";
+
+export const queries = createQueryKeyStore({
+  users: {
+    all: {
+      queryKey: ["users"],
+      queryFn: () => api.getUsers(),
+    },
+  },
+});
+```
+
+## hook 만들기
+
+마지막으로 `useUser` `hook`을 만든후 `app.tsx`에서 데이터를 불러오면 아주 쉽게 쿼리 키를 등록하실 수 있습니다.
+
+```tsx
+// useUser hook
+import { useQuery } from "@tanstack/react-query";
+import { queries } from "./query";
+
+export function useUsers() {
+  return useQuery({
+    ...queries.users.all,
+  });
+}
+```
+
+```tsx
+import "./styles.css";
+import { useUsers } from "./useUser";
+
+export default function App() {
+  const { data, error, isLoading, isError } = useUsers();
+
+  if (isLoading) {
+    return <h1>Loading...</h1>;
+  }
+
+  if (isError) {
+    return <h1>Something Error!...</h1>;
+  }
+
+  console.log(data);
+
+  return (
+    <div className="App">
+      <h1>Hello Wrold</h1>
+      <h2>get random user using query key factory</h2>
+
+      <ul
+        style={{
+          listStyle: "none",
+          display: "flex",
+          flexDirection: "column",
+          rowGap: "10px",
+        }}
+      >
+        {data.results.map((el) => (
+          <li
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: "10px",
+              border: "1px solid gray",
+              borderRadius: "10px",
+              padding: "5px",
+            }}
+            key={el.cell}
+          >
+            <img
+              style={{ borderRadius: "50%" }}
+              src={el.picture.thumbnail}
+              alt="avatar"
+            />
+            {`${el.name.title} ${el.name.first} ${el.name.last}`}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+## CodeSandbox 에서 확인하기
+
+모든 코드는 `CodeSandbox`에 작성되어 있습니다. 직접 확인하면서 변경해 보세요
+
+<CodeSandbox
+  src="https://codesandbox.io/embed/px5wy2?view=preview&module=%2Fpublic%2Fusers.json"
+  title="react-query-factory-countries"
+  allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+  sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+/>
+
+## 개인 프로젝트에 적용
+
+저의 개인 프로젝트에서는 아래의 코드처럼 query key 들을 관련된 key를 생성할 때 바로 위에서 객체를 만들어 적용 했었습니다.
+
+```ts
+export const liveQueryKey = {
+  useLiveMathesQuery: "footballHomeLiveMathesQuery",
+};
+
+export const useLiveMathesQuery = (leagueId: number | null) => {
+  return useQuery({
+    queryKey: [liveQueryKey.useLiveMathesQuery, leagueId],
+    queryFn: ({ queryKey }) => getLiveMatches(queryKey[1] as number),
+    enabled: !!leagueId,
+    staleTime: 60000,
+    gcTime: 60000,
+  });
+};
+
+export const useLiveLineUpQuery = (fixtureId?: number) => {
+  return useQuery({
+    queryKey: [liveQueryKey.useLiveMathesQuery, fixtureId],
+    queryFn: ({ queryKey }) => getLineUp(queryKey[1] as number),
+    enabled: !!fixtureId,
+    staleTime: 60000,
+    gcTime: 60000,
+  });
+};
+```
+
+하지만 리팩토링 이후에는 아래의 코드처럼 \*\*query key와 function을 따로 관리할 수 있고 코드 네이밍도 훨씬 읽기 쉽게 만들 수 있어서 가독성과 유지보수가 더 좋아진 것 같았습니다.
+
+```ts
+// live.ts
+import { createQueryKeys } from "@lukemorales/query-key-factory";
+import { getLineUp, getLiveMatches } from "../apis/live";
+
+export const lives = createQueryKeys("lives", {
+  live: (leagueId: number) => ({
+    queryKey: [leagueId],
+    queryFn: () => getLiveMatches(leagueId),
+  }),
+
+  lineup: (fixtureId: number) => ({
+    queryKey: [fixtureId],
+    queryFn: () => getLineUp(fixtureId),
+  }),
+});
+```
+
+```ts
+// use-live-query.ts
+import { queries } from "./../services/quries/index";
+import { useQuery } from "@tanstack/react-query";
+
+export const useLiveMathesQuery = (leagueId: number | null) => {
+  return useQuery({
+    ...queries.lives.lineup(leagueId!),
+    enabled: !!leagueId,
+    staleTime: 60000,
+    gcTime: 60000,
+  });
+};
+
+export const useLiveLineUpQuery = (fixtureId?: number) => {
+  return useQuery({
+    ...queries.lives.lineup(fixtureId!),
+    enabled: !!fixtureId,
+    staleTime: 60000,
+    gcTime: 60000,
+  });
+};
+```
+
+또한 news 페이지 에서는 무한 스크롤을 쓰고 있었기 때문에 `ctx`를 통해 `pageParam`을 가져와 적용해 주었습니다.
+
+```ts
+// news.ts
+export const news = createQueryKeys("news", {
+  global: (query: string, filter?: string) => ({
+    queryKey: [query, filter],
+    queryFn: (ctx) => getGlobalNews(query, ctx.pageParam as number, filter),
+  }),
+  local: (query: string) => ({
+    queryKey: [query],
+    queryFn: (ctx) => getNaverNews(query, ctx.pageParam as number),
+  }),
+});
+```
+
+```ts
+// use-news-query
+
+export const useGlobalNewsQuery = (
+  query: string,
+  isUse: boolean,
+  filter?: string
+) => {
+  return useInfiniteQuery({
+    ...queries.news.global(query, filter),
+    initialPageParam: 1,
+    enabled: !!query && !!isUse,
+    getNextPageParam: (lastPage, pages) => {
+      if (lastPage.status === "ok" && lastPage.articles.length > 0) {
+        return pages?.length + 1;
+      }
+      return undefined;
+    },
+    select(data) {
+      return data.pages.flatMap((data) => data.articles);
+    },
+  });
+};
+
+export const useLocalNewsQuery = (query: string, isUse: boolean) => {
+  return useInfiniteQuery({
+    ...queries.news.local(query),
+    initialPageParam: 1,
+    enabled: !!query && !!isUse,
+    getNextPageParam: (lastPage) => {
+      const nextPage = lastPage.start + 1;
+      return lastPage.items.length === 0 ? undefined : nextPage;
+    },
+    select(data) {
+      return data.pages.flatMap((data) => data.items);
+    },
+  });
+};
+```
+
+마지막으로 나머지 코드들도 `index.ts` 파일을 생성하여 모두 머지시켜주고 사용할 때 `queries`를 따로 불러와서 사용했기 때문에 매우 편리하였습니다.
+
+```ts
+// query/index.ts
+import { mergeQueryKeys } from "@lukemorales/query-key-factory";
+import { banners } from "./banner";
+import { leagues } from "./league";
+import { lives } from "./live";
+import { matchResults } from "./match-result";
+import { news } from "./news";
+import { predicts } from "./predict";
+import { players } from "./player";
+import { ranks } from "./rank";
+import { schedules } from "./schedules";
+import { searches } from "./search";
+import { teams } from "./team";
+
+export const queries = mergeQueryKeys(
+  banners,
+  leagues,
+  lives,
+  matchResults,
+  news,
+  predicts,
+  players,
+  ranks,
+  schedules,
+  searches,
+  teams
+);
+```
+
+## 결론
+
+이번 포스트에서는 `@lukemorales/query-key-factory` 라이브러리를 활용하여 React에서 쿼리 키를 효율적으로 관리하는 방법을 알아보았습니다. 이를 통해 저는 코드의 가독성을 높이고, 쿼리 키의 재사용 할 수 있었습니다.
+
+이 라이브러리는 특히 대규모 프로젝트에서 쿼리 키를 체계적으로 관리하고, 중복 코드를 줄이며, 유지보수성을 높이는 데 큰 도움이 될 것 같습니다. 앞으로 프로젝트에서 React Query를 사용할 때, 이 라이브러리를 적극 활용하여 더욱 효율적인 쿼리 키 관리를 해 보겠습니다.
