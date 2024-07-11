@@ -13,6 +13,7 @@ type CalloutType = "info" | "warn" | "danger" | "normal";
 interface CalloutProps extends PropsWithChildren {
   type?: CalloutType;
   title?: string;
+  content?: string;
 }
 
 interface IconType {
@@ -52,17 +53,18 @@ const Callout = (props: CalloutProps) => {
   return (
     <div
       className={cn(
-        "my-6 relative flex gap-3 justify-start not-prose rounded-md px-12 py-4 dark:text-white",
+        "my-6 relative  flex gap-3 justify-start not-prose rounded-md px-12 py-4 dark:text-white",
         boxClassName
       )}
     >
       <div className="absolute top-4 left-4 h-fit">
         <Icon />
       </div>
-      <div className="flex-1  flex text-base prose-p:m-0">
+      <div className="flex-1 flex w-full text-base prose-p:m-0">
         {props.title && (
           <span style={{ fontWeight: "bold" }}>{props.title}</span>
         )}
+        <p>{props.content}</p>
         {props.children}
       </div>
     </div>

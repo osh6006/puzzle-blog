@@ -1,0 +1,297 @@
+---
+title: 쿠키와 세션 그리고 스토리지 (With Next.js)
+date: 2024-03-20
+lastmod: 2024-06-24
+author: ohs6006
+thumbnail: "https://nextjs.org/_next/image?url=%2Fstatic%2Fblog%2Fnext-15-rc%2Fcreate-next-app-dark.png&w=2048&q=75"
+---
+
+팀 프로젝트를 진행 중에 로그인 기능을 구현하는 과정에서 쿠키를 사용하여 로그인 상태를 유지하는 과정을 진행하였습니다.
+하지만 이 과정에서 쿠키 값을 가져오는 도중 올바른 값을 가져올 수 없는 현상이 발생하였기 때문에 오늘은 해당 문제와 해결과정을 공유하여 다음에 실수를 방지하려고 합니다.
+
+<Callout type="info">이 글은 **2024-06-25** 에 업데이트 되었습니다.</Callout>
+
+<Callout type="warn">
+  이 글은 **HTML, CSS , JavaScript, TypeScript, React, Next.js**에 대한 기본적인
+  지식을 알고 있어야 합니다.
+</Callout>
+
+## 쿠키와 세션 그리고 스토리지
+
+제일 처음 헷갈렸던 개념인 쿠키와 세션 그리고 스토리지에 대해 간단하게 설명하겠습니다.
+
+### 쿠키
+
+쿠키는 클라이언트 측 **(브라우저)에 저장되는 작은 데이터 파일**로, **주로 사용자의 상태 정보를 저장**하는 데 사용됩니다.
+
+- 저장 위치: 클라이언트의 브라우저에 저장됩니다.
+- 구조: Key-Value 형태의 문자열 데이터.
+- 용량 제한: 하나의 쿠키는 최대 4KB까지 저장 가능하며, 도메인당 최대 20개의 쿠키를 가질 수 있습니다.
+- 만료 시간: 쿠키는 만료 시간을 설정할 수 있으며, 만료 시간이 지나면 자동으로 삭제됩니다.
+- 보안: 클라이언트 측에 저장되기 때문에 보안에 취약할 수 있으며, 민감한 정보를 저장하는 데 적합하지 않습니다. XSS(크로스 사이트 스크립팅) 공격에 취약할 수 있습니다.
+  사용 예: 로그인 상태 유지, 사용자 선호 설정 저장 등.
+
+### 세션
+
+세션은 **서버 측에서 사용자 정보를 저장하고 관리하는 방식**입니다. 서버는 각 클라이언트에 **고유한 세션 ID를 부여하여 사용자의 상태를 관리**합니다.
+
+- 저장 위치: 서버 측에 저장됩니다.
+- 구조: 객체 형태로 저장되며, 서버 리소스가 허용하는 한도까지 저장할 수 있습니다.
+- 만료 시간: 서버에서 지정한 타임아웃이 지나면 세션이 만료됩니다. 보통 30분으로 설정됩니다.
+- 보안: 사용자 정보를 서버에 저장하기 때문에 보안성이 높습니다. 그러나 세션 하이재킹과 같은 보안 공격에 대비해야 합니다.
+- 사용 예: 사용자 인증, 쇼핑 카트 정보 저장 등.
+
+### 웹 스토리지 (Web Storage)
+
+웹 스토리지는 HTML5에서 도입된 **클라이언트 측 저장소**로, **로컬 스토리지(Local Storage)와 세션 스토리지(Session Storage)로** 나뉩니다.
+
+#### 로컬 스토리지 (Local Storage)
+
+- 저장 위치: 클라이언트의 브라우저에 저장됩니다.
+- 용량 제한: 도메인당 5MB까지 저장 가능.
+- 만료 시간: 명시적으로 삭제하지 않는 한 데이터가 영구적으로 저장됩니다.
+- 사용 예: 사용자 설정, 장기적인 데이터 저장.
+
+#### 세션 스토리지 (Session Storage)
+
+- 저장 위치: 클라이언트의 브라우저에 저장됩니다.
+- 용량 제한: 도메인당 5MB까지 저장 가능.
+- 만료 시간: 브라우저 세션이 끝날 때(탭이나 창을 닫을 때) 데이터가 삭제됩니다.
+- 사용 예: 일시적인 데이터 저장, 브라우저 탭 간 데이터 공유.
+
+아래는 각각의 특징을 표로 나타낸 것입니다.
+
+|   특성    |            쿠키             |           세션           |       로컬 스토리지       |     세션 스토리지     |
+| :-------: | :-------------------------: | :----------------------: | :-----------------------: | :-------------------: |
+| 저장 위치 |         클라이언트          |           서버           |        클라이언트         |      클라이언트       |
+|   용량    |          최대 4KB           |     서버 설정에 따름     |    일반적으로 5MB 이상    |  일반적으로 5MB 이상  |
+| 만료 기간 |          설정 가능          |     브라우저 종료 시     | 영구적 (수동 삭제 전까지) |      탭 종료 시       |
+| 서버 전송 |          자동 전송          |      세션 ID만 전송      |        전송 안 됨         |      전송 안 됨       |
+| 주요 용도 |      세션 관리, 개인화      | 사용자 인증, 임시 데이터 |  클라이언트 데이터 저장   | 탭별 임시 데이터 저장 |
+|  접근성   |         모든 윈도우         |         서버 측          |        모든 윈도우        |   같은 탭 내에서만    |
+|  JS 접근  |            가능             |          불가능          |           가능            |         가능          |
+|  보안성   | 낮음 (HttpOnly로 개선 가능) |           높음           |           중간            |         중간          |
+
+## 쿠키와 도메인
+
+현재 사이드 프로젝트에서 사용하는 로그인 방식은 사용자가 로그인 버튼을 누르면 `discord` 의 페이지로 이동한 뒤 소셜로그인 인증을 하고 서버 페이지로 리다이렉트 후 정보를 저장 후 다시 서버에서 클라이언트 페이지로 리다이렉트 하면서 쿠키를 주는 방식으로 구현되어 있었습니다.
+
+하지만 서버에서 클라이언트 페이지로 리다이렉트 하는 과정에서 쿠키를 받을 수 없었는데 바로 쿠키와 도메인과의 관계를 생각하지 않고 있었기 때문입니다.
+
+### 해결 방법
+
+**쿠키를 설정하고 사용하려면 동일한 출처 정책을 준수**해야 합니다.
+따라서 배포된 사이트에서 **도메인을 설정하여 프론트엔드와 백엔드의 도메인을 일치**시켰습니다. 또한 백엔드 관점과 프론트엔드 관점에서 도메인을 설정해 줘야 합니다.
+
+아래는 백엔드와 프론드엔드에서 쿠키 설정을 어떻게 해야되는지 간단하게 설명한 것입니다.
+
+> 동일 출처 정책이란?
+>
+> 동일 출처 정책은 프로토콜, 포트(명시된 경우), 그리고 호스트가 같은 경우 두 URL은 동일한 출처를 가지는 것으로 아래는 간단하게 도메인 네임의 구성과 `MDN`에서 제공하는 동일 출처 정책의 예시 표 입니다.
+>
+> ```bash
+> 프로토콜://호스트네임.도메인네임/경로?쿼리#프래그먼트
+> ```
+>
+> |                        URL                        |   결과    |                   이유                    |
+> | :-----------------------------------------------: | :-------: | :---------------------------------------: |
+> |    `http://store.company.com/dir2/other.html`     | 동일 출처 |                경로만 다름                |
+> | `http://store.company.com/dir/inner/another.html` | 동일 출처 |                경로만 다름                |
+> |       `https://store.company.com/page.html`       |   실패    |               다른 프로토콜               |
+> |    `http://store.company.com:81/dir/page.html`    |   실패    | 다른 포트 (http:// 는 기본적으로 80 포트) |
+> |      `http://news.company.com/dir/page.html`      |   실패    |               다른 >?호스트               |
+
+### 백엔드 관점
+
+백엔드 관점 (express 기준이며 프레임워크 마다 다를 수 있습니다.)
+
+- 쿠키 도메인 설정:
+
+  - 쿠키를 생성할 때 `domain` 옵션을 명시적으로 설정합니다.
+
+    ```js
+    // 예시입니다.
+    res.cookie("name", "value", { domain: ".example.com" });
+    ```
+
+  - 이렇게 설정하면 `example.com`과 그 서브도메인에서 쿠키에 접근할 수 있습니다.
+
+- CORS 설정:
+
+  - 프론트엔드와 백엔드가 다른 도메인을 사용하는 경우, CORS 설정이 필요합니다.
+    `Access-Control-Allow-Origin` 헤더를 프론트엔드 도메인으로 설정합니다.
+    `Access-Control-Allow-Credentials` 헤더를 `true`로 설정합니다.
+
+- 보안 설정:
+
+  - `Secure` 옵션을 사용하여 `HTTPS` 연결에서만 쿠키가 전송되도록 합니다.
+  - `HttpOnly` 옵션을 사용하여 JavaScript에서 쿠키에 접근하지 못하게 합니다.
+  - `SameSite` 옵션을 설정하여 크로스 사이트 요청 위조(CSRF) 공격을 방지합니다.
+
+### 프론트엔드 관점
+
+- 쿠키 접근 설정:
+
+  - `withCredentials` 옵션을 `true`로 설정하여 크로스 도메인 요청에서 쿠키를 포함시킵니다.
+
+  ```js
+  axios.get("https://api.example.com/data", { withCredentials: true });
+  ```
+
+- 도메인 일치:
+
+  - 프론트엔드 도메인과 백엔드에서 설정한 쿠키 도메인이 일치해야 합니다.
+  - 백엔드에서 설정한 쿠키 도메인이 `.example.com`이라면, 프론트엔드는 `example.com` 또는 그 서브도메인이어야 합니다.
+
+- HTTPS 사용:
+
+  - 보안 쿠키를 사용하는 경우, 프론트엔드도 `HTTPS`를 사용해야 합니다.
+  - 쿠키 생성 (필요한 경우):
+  - 프론트엔드에서 직접 쿠키를 생성해야 하는 경우, `document.cookie`를 사용합니다.
+
+    ```js
+    document.cookie =
+      "name=value; domain=.example.com; path=/; secure; samesite=strict";
+    ```
+
+- SameSite 정책 고려:
+
+  - 크롬 80 이후 버전에서는 `SameSite` 기본값이 'Lax'로 변경되었습니다.
+  - 크로스 사이트 요청에서 쿠키를 사용해야 하는 경우, 백엔드에서 `SameSite` 설정을 적절히 조정해야 합니다.
+
+따라서 저는 팀원들과 협의하여 도메인을 아래와 같이 설정해 주었습니다.
+
+```bash
+# 프론트엔드 도메인
+https://www.example.com/
+
+# 백엔드 도메인
+https:/example.com/
+```
+
+## Next.js에서 쿠키 다루기
+
+`Next.js`에서는 쿠키를 쉽게 다룰 수 있는 라이브러리를 제공합니다.
+아래의 코드처럼 `cookies`를 `import` 하여 생성, 삭제 등 다양한 방식으로 사용할 수 있습니다.
+
+<Callout type="info">
+  단 next/headers 에 있는 cookies는 서버컴포넌트에서만 가능합니다. 클라이언트
+  컴포넌트에서 불러오려면 다른 라이브러리나 기존 쿠키를 가져오는 방법을 사용해야
+  합니다.
+</Callout>
+
+```ts
+import { cookies } from "next/headers";
+
+export default function Page() {
+  const cookieStore = cookies();
+
+  /* 쿠키 가져오기 */
+  // cookieStore.get("쿠키이름")
+  // theme이라는 쿠키가 없으면 undefined를 반환합니다.
+  const theme = cookieStore.get("theme");
+
+  // cookies().getAll()
+  // 사용할 수 있는 쿠키를 전부 배열로 가져옵니다.
+
+  // cookies().has("쿠키이름")
+  // 쿠키를 가지고 있는지 확인합니다.
+  const hasCookie = cookieStore.has("theme");
+
+  /* 쿠키 생성하기 */
+  // cookies().set(name, value, options)
+  cookies().set("name", "lee");
+  // or
+  cookies().set("name", "lee", { secure: true });
+  // or
+  cookies().set({
+    name: "name",
+    value: "lee",
+    httpOnly: true,
+    path: "/",
+  });
+
+  /* 쿠키 삭제하기*/
+  // cookies().delete(name)
+  cookies().delete("theme");
+
+  // 쿠키를 만료시킵니다.
+  cookies().set("name", "value", { maxAge: 0 });
+  return "...";
+}
+```
+
+## 프로젝트에 적용
+
+프로젝트에서는 위에서 설명한 방법을 사용하여 쿠키를 생성하고 삭제하는 방식으로 사용하였습니다.
+백 엔드에서 `access_token`을 `Authorization`으로 쿠키를 생성하여 보내주기 때문에 쿠키가 있는지 확인하고 있으면 `access_token`을 가져오고 아니면 `null 값을 줘서 로그인이 되어있는지 안되어있는지를 파악했습니다.
+
+```ts
+const cookiesList = cookies();
+const hasTokenCookie = cookiesList.has("Authorization");
+const accessToken = hasTokenCookie
+  ? cookiesList.get("Authorization")?.value
+  : null;
+
+return {
+  user: accessToken ? { token: accessToken } : null,
+};
+```
+
+### 로그아웃
+
+로그아웃 버튼을 누르고 만약에 쿠키가 있으면 백엔드에 로그아웃 요청을 보내고 쿠키를 삭제하는 방식으로 로그아웃을 구현하였습니다.
+
+이때 무슨 이유인지는 모르겠지만 `cookies().delete("Authorization");` 이렇게 사용하면 쿠키가 삭제가 안되서 `maxAge` 를 0으로 세팅하여 삭제를 하였습니다.
+
+```ts
+export const logOut = async () => {
+  const cookiesList = cookies();
+  const hasTokenCookie = cookiesList.has("Authorization");
+  const accessToken = cookiesList.get("Authorization")?.value;
+
+  try {
+    if (hasTokenCookie) {
+      const result = await fetch(`${SERVER_URL}/auth/logout`, {
+        method: "POST",
+        headers: {
+          Authorization: `${accessToken}`,
+        },
+      });
+
+      if (result.status === 201) {
+        cookies().set({
+          name: "Authorization",
+          maxAge: 0,
+          path: "/",
+          domain: COOKIE_DEKETE_DOMAIN,
+          sameSite: "none",
+          secure: true,
+          value: "",
+        });
+
+        cookies().set({
+          name: "userInfo",
+          maxAge: 0,
+          path: "/",
+          domain: COOKIE_DEKETE_DOMAIN,
+          sameSite: "none",
+          secure: true,
+          value: "",
+        });
+      }
+    }
+  } catch (error) {
+    console.log(error);
+    throw new Error("Log Out Error!" + error);
+  }
+};
+```
+
+## 결론
+
+쿠키와 관련된 문제를 해결하면서 쿠키에 대한 헷갈리는 개념도 다시 공부할 수 있었고, 쿠키와 도메인 관련 정책, 백엔드와 프론트엔드에서 설정해야 하는 방법 등 다양한 정보를 얻을 수 있었습니다.
+
+## 참고 사이트
+
+[https://nextjs.org/docs/app/api-reference/functions/cookies](https://nextjs.org/docs/app/api-reference/functions/cookies)

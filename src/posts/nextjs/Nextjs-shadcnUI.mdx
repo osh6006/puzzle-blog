@@ -1,0 +1,212 @@
+---
+title: Nextjs 에서 Shadcn UI 사용하기
+date: 2024-04-17
+lastmod: 2024-05-12
+author: ohs6006
+thumbnail: "https://github.com/shadcn-ui/ui/raw/main/apps/www/public/og.jpg"
+---
+
+새로운 프로젝트를 진행하면서 1달이라는 짧은 기간 내에 프로젝트를 완성해야 했기에 팀원들과의 논의 끝에, `UI` 개발을 최대한 신속하게 처리하고 더 중요한 기능 구현에 집중하기로 결정했습니다. 따라서, 빠른 UI구현을 위해 `Shadcn UI`의 사용을 결정하게 되었습니다.
+
+<Callout type="info">이 글은 **2024-04-30** 에 업데이트 되었습니다.</Callout>
+
+## Shadcn UI
+
+`Shadcn UI`은 개발자가 이미 구성된 컴포넌트를 앱에 복사하여 붙여넣을 수 있는 재사용 가능한 컴포넌트 모음입니다. **Shadcn UI 구성 요소 라이브러리가 아니기 때문에(종속성으로 설치하지 않는다는 의미입니다. npm을 통해 사용할 수 없거나 배포되지 않습니다.)** 기존의 `UI` 라이브러리 보다 더 가벼우며, **붙여넣기** 방식으로 불러오기 때문에 개발자가 프로젝트의 요구 사항에 따라 컴포넌트를 적합하게 조정할 수 있습니다.
+
+더 자세한 사항은 공식 문서에서 확인하실 수 있습니다.\
+[Shadcn UI 공식문서 바로가기](https://ui.shadcn.com/docs)
+
+<Callout type="warn">
+  Tailwind 또는 NextUI 와 같은 다른 UI 라이브러리도 이미 이러한 UI를 지원 하지만
+  이러한 라이브러리는 일반적으로 사용할 때 요금이 부과됩니다.
+</Callout>
+
+## 사용하기
+
+### 환경설정
+
+기본적인 환경 설정은 계속 변화하기 때문에 항상 공식 문서를 확인하면서 기본 환경을 설정해 주세요 (`Next.js` 말고 다른 환경에서도 설정하실 수 있습니다.)
+
+[기본 환경 설정 공식 문서 확인하기](https://ui.shadcn.com/docs/installation)
+
+### 버튼
+
+공식 문서를 사용하여 기본 환경 설치를 했다면 이제 기본 컴포넌트인 버튼을 사용해 보겠습니다.
+
+```bash
+npx shadcn-ui@latest add button
+```
+
+명령어를 사용하여 버튼을 생성하면 `Components/ui` 경로에 `Button.tsx` 파일이 생성 됩니다.
+
+```tsx
+import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
+import { cva, type VariantProps } from "class-variance-authority";
+
+import { cn } from "@/lib/utils";
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        destructive:
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline:
+          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        secondary:
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-10 px-4 py-2",
+        sm: "h-9 rounded-md px-3",
+        lg: "h-11 rounded-md px-8",
+        icon: "h-10 w-10",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+);
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
+}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button";
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
+    );
+  }
+);
+Button.displayName = "Button";
+
+export { Button, buttonVariants };
+```
+
+위의 코드는 명령어를 통해 생성한 버튼 코드로 다양한 `props`를 개발자가 커스텀 할 수 있고, 스타일 또한마음대로 변경이 가능합니다.
+
+### Form과 Input
+
+제가 진행하는 프로젝트는 `Form` 안에 다양한 `input`(select, radio, progressbar등)의 컴포넌트를 다루고 있습니다. `shadcn-ui` 는 `Form` 을 사용할 때 `react-hook-form`과 `zod`를 같이 사용하여 최적화 하고 있기 때문(두 가지 방법을 사용하지 않고 다르게 제어해도 됩니다.)에 이 두가지 라이브러리를 사용하여 다양한 방식으로 조합하여 아래와 같은 기능을 제공합니다.
+
+- `<FormField />` 컴포넌트는 제어되는 양식 필드를 제공합니다.
+- `zod` 를 사용하여 양식 유효성 검사를 수행합니다.
+- 접근성 및 오류 메시지를 처리합니다.
+- `aria` 를 기반으로 양식 필드에 올바른 속성을 적용합니다.
+- 모든 `Radix UI` 구성 요소와 작동하도록 제작되었습니다.
+- 자신만의 스키마 라이브러리를 가져오세요. `zod`를 사용하지 않고 다른 라이브러리를 조합해도 상관 없습니다.
+- 마크업과 스타일을 완벽하게 제어할 수 있습니다.
+
+사용하면서 `zod`의 문서와 `react-hook-form`의 문서를 확인하면 더 쉽게 사용이 가능합니다.
+
+[react-hook-form 공식 문서 바로가기](https://react-hook-form.com/get-started)\
+[zod 공식 문서 바로가기](https://zod.dev/)
+
+#### 사용법
+
+우선 `shadcn-ui`의 `Form`과 `Input`을 프로젝트에 추가합니다.
+
+```bash
+# components/ui 폴더 안에 컴포넌트들이 추가 됩니다.
+npx shadcn-ui@latest add form
+npx shadcn-ui@latest add input
+```
+
+그리고 `Zod` 스키마를 사용하여 양식의 `validation`을 정의합니다.
+
+```tsx
+import { z } from "zod";
+
+const formSchema = z.object({
+  username: z.string().min(2).max(50),
+});
+```
+
+다음으로 `react-hook-form` 의 `useForm` 훅을 사용하여 양식을 생성합니다.
+
+```tsx
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+
+const form = useForm<z.infer<typeof formSchema>>({
+  resolver: zodResolver(formSchema),
+  defaultValues: {
+    username: "",
+  },
+});
+
+function onSubmit(values: z.infer<typeof formSchema>) {
+  // Do something with the form values.
+  // ✅ This will be type-safe and validated.
+  console.log(values);
+}
+```
+
+마지막으로 `shad ui`의 `<Form />` 컴포넌트를 사용하여 `form`을 빌드합니다.
+
+```tsx
+"use client";
+
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+
+<Form {...form}>
+  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+    <FormField
+      control={form.control}
+      name="username"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Username</FormLabel>
+          <FormControl>
+            <Input placeholder="shadcn" {...field} />
+          </FormControl>
+          <FormDescription>This is your public display name.</FormDescription>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+    <Button type="submit">Submit</Button>
+  </form>
+</Form>;
+```
+
+## 결과 확인하기
+
+지금까지 했던 내용은 `codesandbox` 에서 확인하실 수 있습니다. 그리고 이 외에도 `Card`, `Slider`, `Toster` 등과 같은 다른 다양한 라이브러리도 제공하기 때문에 꼭 공식문서를 보고 하나씩 써 보시면 좋을 것 같습니다.
+
+<CodeSandbox
+  src="https://codesandbox.io/p/devbox/youthful-star-r8zcq5?file=%2Fapp%2Fpage.tsx&embed=1"
+  title="youthful-star"
+  allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+  sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+/>
+
+## 결론
+
+새로운 프로젝트를 시작할 때마다 기본적인 컴포넌트를 구현하기 위해 항상 GitHub에서 이전에 사용했었던 코드를 찾아 복사해 왔습니다. 그러나 이렇게 구현한 컴포넌트가 정확히 동작하는지 확신할 수 없었고, 또 다양한 컴포넌트를 사용하려면 다시 기본적인 컴포넌트를 구현해야 했습니다. 하지만 `Shadcn UI`를 사용하면 이제 검증된 컴포넌트 코드를 간편하게 복사하여 내가 필요한 대로 사용할 수 있기 때문에 매우 사용하기 유용했습니다.

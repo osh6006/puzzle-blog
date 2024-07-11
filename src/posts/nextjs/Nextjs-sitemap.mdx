@@ -1,0 +1,233 @@
+---
+title: Nextjs 에서 Sitemap 작성하기
+date: 2024-06-17
+lastmod: 2024-06-17
+author: ohs6006
+thumbnail: "https://res.cloudinary.com/dxesudkxn/image/upload/v1719249565/blog/hdumsru3ulfnmhsahygq.png"
+---
+
+새로운 프로젝트를 마무리하던 도중 저에게 맡겨진 역할은 웹 페이지의 `sitemap`을 작성하는 것이었습니다. 따라서 오늘은 `Next.js`에서 `sitemap`을 작성하는 다양한 방법에 대해서 공부했던 내용과 현재 프로젝트에는 어떻게 적용했는지에 대해서 글을 써 보겠습니다.
+
+<Callout type="info"> 이 글은 **2024-06-24** 에 업데이트 되었습니다.</Callout>
+
+<Callout type="warn">
+  이 글은 **HTML, CSS , JavaScript, TypeScript, React, Next.js**에 대한 기본적인
+  지식을 알고 있어야 합니다.
+</Callout>
+>
+
+## Sitemap 이란
+
+사이트맵은 웹사이트의 구조와 내용을 검색 엔진에 알려주는 파일입니다. 주로 XML 형식으로 작성되며, 모든 페이지의 URL 목록과 각 페이지의 추가 정보를 포함합니다. **검색 엔진 크롤러가 웹사이트를 효율적으로 크롤링하고 인덱싱할 수 있도록 돕습니다.** 특히 링크로 연결되지 않은 페이지나 새로 추가된 페이지를 검색 엔진에 알리는 데 유용합니다. 사이트맵은 SEO에 직접적인 영향을 주지는 않지만, 대규모 사이트, 새로운 사이트, 또는 내부 링크가 부족한 사이트에 특히 유용합니다.
+
+예를들어 아래와 같은 구조의 웹사이트가 있다고 해보겠습니다.
+
+```bash
+홈페이지 (/)
+├── 제품 (/products)
+│   ├── 제품A (/products/A)
+│   └── 제품B (/products/B)
+├── 서비스 (/services)
+└── 연락처 (/contact)
+```
+
+그러면 XML 형식으로 작성된 사이트맵은 아래와 같이 작성될 수 있습니다.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://example.com/</loc>
+    <lastmod>2024-06-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://example.com/products</loc>
+    <lastmod>2024-06-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <!-- 추가 URL 항목들 -->
+</urlset>
+```
+
+## NextJS에서의 Sitemap
+
+`Next.js`에서의 `sitemap`은 위와 같이 루트 디렉토리에 `xml`파일을 작성해도 되지만 아래와 같이 자바스크립트를 이용하여 작성하는 방법으로 작성할 수 있습니다. 아래의 코드는 사이트맵의 객체배열을 리턴하면 `xml` 파일로 변환되어 자동으로 생성됩니다.
+
+```tsx
+import { MetadataRoute } from "next";
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  return [
+    {
+      url: "https://acme.com",
+      lastModified: new Date(),
+      changeFrequency: "yearly",
+      priority: 1,
+    },
+    {
+      url: "https://acme.com/about",
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: "https://acme.com/blog",
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.5,
+    },
+  ];
+}
+```
+
+사이트맵의 타입은 아래의 코드와 같습니다.
+
+```tsx
+type Sitemap = Array<{
+  url: string;
+  lastModified?: string | Date;
+  changeFrequency?:
+    | "always"
+    | "hourly"
+    | "daily"
+    | "weekly"
+    | "monthly"
+    | "yearly"
+    | "never";
+  priority?: number;
+  alternates?: {
+    languages?: Languages<string>;
+  };
+}>;
+```
+
+### 사이트맵을 여러개 생성하기
+
+프로젝트 규모가 커지게 된다면 사이트 맵을 분리하여 작동하게 해야할 수도 있습니다. 이렇게 된다면 아래와 같은 방법으로 생성할 수 있습니다.
+
+- `app/sitemap.xml`파일을 생성하고 `app/product/sitemap.xml`을 생성합니다.
+- `generateSitemaps` 함수를 사용합니다.
+
+`generateSitemaps` 함수를 사용할 경우 아래의 코드처럼 사용할 수 있습니다. 서버에서 `productId`의 배열을 가져온 다음 그 `id` 값을 가지고 `sitemap` 을 생성합니다.
+
+```tsx
+import { BASE_URL } from "@/app/lib/constants";
+
+// 서버에서 받아온 프로덕트 아이디의 모음
+export async function generateSitemaps() {
+  return [{ id: 0 }, { id: 1 }, { id: 2 }, { id: 3 }];
+}
+
+export default async function sitemap({
+  id,
+}: {
+  id: number;
+}): Promise<MetadataRoute.Sitemap> {
+  // 구글의 경우 약 50000개까지 사이트맵을 만들 수 있습니다.
+  const start = id * 50000;
+  const end = start + 50000;
+  const products = await getProducts(
+    `SELECT id, date FROM products WHERE id BETWEEN ${start} AND ${end}`
+  );
+  return products.map((product) => ({
+    url: `${BASE_URL}/product/${id}`,
+    lastModified: product.date,
+  }));
+}
+```
+
+## 간단한 프로젝트 만들어 보기
+
+이제 기본적인 사이트 맵을 알았으니 이에대한 간단한 프로젝트를 만들어보겠습니다. 이전에 [Next.js에서 loading, error 다루기](https://osh6006.github.io/posts/Nextjs%EC%97%90%EC%84%9C-loading-error-%EB%8B%A4%EB%A3%A8%EA%B8%B0/) 의 글에서 작성했던 프로젝트에 `sitemap`을 추가해 보겠습니다.
+
+위의 프로젝트에서는 각각 `home`, `about`, `error-check` 페이지가 존재하고 있습니다. 따라서 각각에 해당하는 페이지에 대한 `sitemap`을 생성해 주었습니다.
+
+```ts
+import { MetadataRoute } from "next";
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  return [
+    {
+      url: "https://6lf27n-3000.csb.app",
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 1,
+    },
+    {
+      url: "https://6lf27n-3000.csb.app/about",
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.8,
+    },
+    {
+      url: "https://6lf27n-3000.csb.app/check-error",
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.5,
+    },
+  ];
+}
+```
+
+## 결과 확인하기
+
+`codesandbox`에서 결과를 확인해 보세요 확인하시려면 주소창에 `코드샌드박스 주소/sitemap.xml`을 입력해주세요!
+
+아마 이 [링크](https://6lf27n-3000.csb.app/sitemap.xml)에 들어가시면 확인이 가능하실 겁니다.
+
+<CodeSandbox
+  src="https://codesandbox.io/p/devbox/fetch-basic-6lf27n?file=%2Fapp%2Fsitemap.ts&embed=1"
+  title="fetch-basic"
+  allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+  sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+/>
+
+## 팀 프로젝트에 적용
+
+현재 팀 프로젝트에서는 각 질문 마다 페이지가 동적으로 페이지가 생성되고 있었기 때문에
+위에서 확인했었던 `generateSitemaps` 함수를 사용하여 동적으로 사이트 맵을 만들어줘야 했습니다. 따라서 아래의 코드처럼 서버에서 아이디를 가져온 후 동적으로 사이트 맵을 생성해 주었습니다.
+
+```tsx
+const BASE_URL =
+  process.env.NODE_ENV === "development" ? "로컬 주소" : "배포된 주소";
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const defaultSitemap = [
+    {
+      url: `${BASE_URL}`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 1,
+    },
+  ];
+
+  const templetes = await getTemplateList().catch((error) => {
+    throw new Error(error.message);
+  });
+
+  const templateSitemaps = templetes.map((templete) => {
+    return {
+      url: `가져올 서버 주소`,
+      lastModified: new Date(),
+    };
+  });
+
+  return [...defaultSitemap, ...templateSitemaps];
+}
+
+async function getTemplateList(): Promise<TemplateList> {
+  const response = await fetch(`가져올 서버 주소`);
+  return response.json();
+}
+```
+
+## 결론
+
+`Next.js`에서 `sitemap`을 생성하는 방법에는 여러 가지가 있었습니다. 기존 방식대로 `xml` 파일을 직접 생성하는 방법이 있으며, `sitemap.ts` 파일을 통해 정적 및 동적으로 `sitemap`을 생성할 수도 있습니다. `sitemap.ts` 파일을 사용하면 `Next.js`의 API를 활용하여 동적 경로를 포함한 다양한 페이지를 자동으로 반영할 수 있어 매우 효율적입니다. 이러한 다양한 방법을 활용할 수 있어 상황에 맞게 최적의 방법을 선택할 수 있었고, 덕분에 프로젝트의 `SEO`를 효과적으로 개선할 수 있었습니다.
+
+## 참고 사이트
+
+[https://nextjs.org/docs/app/api-reference/file-conventions/metadata/sitemap](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/sitemap)
