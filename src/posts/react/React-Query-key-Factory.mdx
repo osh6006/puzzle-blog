@@ -8,9 +8,11 @@ thumbnail: "https://camo.githubusercontent.com/2bf556061d47e4f7b1a15d5025be9c559
 
 현재 개인 프로젝트는 외부 api 요청을 tanstack-query를 이용하여 요청하고 있었습니다. 이에 따라 tanstack-query 공식 문서를 보면서 어떤 새로운 기능을 찾아서 리팩토링할까 고민하던 중 공식 문서의 COMMUNITY RESOURCES 탭에 있는 `Query Key factory` 라는 라이브러리를 찾게 되었는데 이 도구로 `query key`를 효율적으로 관리할 수 있을 것 같아 오늘은 Query Key Factory에 대한 간단한 소개와 사용법, 그리고 개인 프로젝트에 어떻게 적용했는지를 소개해 보겠습니다.
 
-<Callout type="info">이 글은 **2024-06-11** 에 업데이트 되었습니다.</Callout>
+<Callout type="info" row={true}>
+  이 글은 **2024-06-11** 에 업데이트 되었습니다.
+</Callout>
 
-<Callout type="warn">
+<Callout type="warn" row={true}>
   이 글은 **HTML, CSS , JavaScript, TypeScript, React, Tanstack-query**에 대한
   기본적인 지식을 알고 있어야 합니다.
 </Callout>
@@ -196,7 +198,7 @@ export function useUpdateUser() {
 이제 간단한 기본 사용법을 알았으니 진짜 실제로 되는지 한번 테스트 해 보겠습니다.
 간단하게 `json` 파일을 만들어 랜덤 유저 데이터를 넣고 실제로 api를 작성해 보았습니다.
 
-<Callout type="warn">
+<Callout type="warn" row={true}>
   code sandbox 로 api 요청을 하면 cors 에러가 발생하기 때문에 (예전에는 잘
   됐는데..) 간단한 json파일 데이터를 생성하였습니다.
 </Callout>

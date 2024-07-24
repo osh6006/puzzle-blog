@@ -9,10 +9,12 @@ thumbnail: "https://nextjs.org/_next/image?url=%2Fstatic%2Fblog%2Fnext-15-rc%2Fc
 3번의 프로젝트 동안 `Next.js` 를 사용하고 있었지만 `Next.js` 의 렌더링 전략의 개념이 살짝 헷갈리는 부분이 있었습니다. 따라서 이번에는 그 개념들을 확실히 공부하고 정리해야겠다는 생각이 들어서
 여러가지 글과 공식문서를 살펴보면서 공부했던 내용들을 적어 보겠습니다.
 
-<Callout type="info">이 글은 **2024-06-23** 에 업데이트 되었습니다.</Callout>
+<Callout type="info" row={true}>
+  이 글은 **2024-06-23** 에 업데이트 되었습니다.
+</Callout>
 
 <Callout type="warn">
-  이 글은 **HTML, CSS , JavaScript, TypeScript, React, Next.js**에 우터를
+  이 글은 **HTML, CSS , JavaScript, TypeScript, React, Next.js**에 App 라우터를
   사용하는 13버전 이상의 버전을 설명하고 있습니다.
 </Callout>
 
@@ -35,10 +37,11 @@ Server Components는 기본적으로 Pre-rendering 방식으로 빌드되며 Ser
 그리고 나서 모든 데이터를 받고나면 **Hydration 과정을 거쳐 클라이언트에서 렌더링**을 완료합니다.
 (페이지와 유저가 상호작용 할 수 있음)
 
-> **Hydration 은 뭔가요?**
->
-> - 미리 렌더링 된 뼈대만 있는 HTML에 JavaScript를 결합하여 이벤트가 동작하도록 하는 과정 입니다.
-> - Next.js에서는 HTML을 미리 렌더링 시키고 이후에 JavaScript를 결합할 때 Hydration을 한다고 할 수 있습니다.
+<Callout type="info" title="Hydration 은 뭔가요?">
+  미리 렌더링 된 뼈대만 있는 HTML에 JavaScript를 결합하여 이벤트가 동작하도록
+  하는 과정 입니다.Next.js에서는 HTML을 미리 렌더링 시키고 이후에 JavaScript를
+  결합할 때 Hydration을 한다고 할 수 있습니다.
+</Callout>
 
 #### Static Rendering
 
