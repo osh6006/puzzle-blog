@@ -69,7 +69,9 @@ export const getPostList = async (category?: string): Promise<IPost[]> => {
   const posts = await Promise.all(
     paths.map((postPath) => parsePost(postPath.replace(/\\/g, "/")))
   );
-  return posts;
+  return posts.sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
 };
 
 // 모든 카테고리 조회

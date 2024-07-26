@@ -1,9 +1,198 @@
 ---
 layout: post
-title: react Suspense에 대해서 알아보기
-date: 2023-04-22
-lastmod: 2024-04-20
+title: React Suspense에 알아보기
+date: 2023-07-26
+lastmod: 2024-07-26
 author: ohs6006
 ---
 
-asdfasdf
+리액트(React)에서는 복잡한 사용자 인터페이스를 구축하고, 사용자 경험을 최적화하기 위해 다양한 기능을 제공합니다. 그 중 하나가 바로 Suspense입니다. 이번 글에서는 리액트의 Suspense에 대해 자세히 설명하고, 어떻게 이를 활용할 수 있는지 알아보겠습니다.
+
+<Callout type="info" row={false}>
+  이 글은 **2024-04-08 에 업데이트 되었습니다.**
+</Callout>
+
+<Callout type="warn" row={false}>
+  이 글은 **JavaScript, TypeScript, React**에 대한 기본적인 지식을 알고 있어야 합니다.
+</Callout>
+
+## Suspense 란?
+
+React Suspense는 리액트 16.6 버전에서 실험적 기능으로 도입되었고, 18 버전부터 정식으로 지원되기 시작했습니다. 이 기능은 **비동기 작업이 완료되기 전에 컴포넌트의 렌더링을 일시 중단**하고, 주로 데이터를 가져오거나, **컴포넌트를 동적으로 로딩**할 때 사용되며, 컴포넌트가 **로딩 중일 때 로딩 스피너와 같은 Fallback UI를 쉽게 제공**하여 로딩 상태를 더 우아하게 처리할 수 있게 해줍니다.
+
+### 왜 Suspense를 사용해야 하는가?
+
+Suspense를 사용하기 이전에는 useEffect와 useState를 이용하여 비동기 로직을 처리하였습니다. 
+
+```tsx
+import React, { useState, useEffect } from 'react';
+
+function DataComponent() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetch('https://api.example.com/data')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setData(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        setError(error);
+        setLoading(false);
+      });
+  }, []); 
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
+
+  return (
+    <div>
+      <h1>Data:</h1>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
+    </div>
+  );
+}
+
+export default DataComponent;
+```
+
+이렇게 코드를 처리하면 문제없이 동작하지만 여러가지 문제점이 발생하게 되는데,
+
+예를 들어, 아래의 예제와 같이 비동기 로직이 발생하는 컴포넌트가 있을 때 비동기 로직이 부모 컴포넌트에서 발생하고, 또 다시 자식 컴포넌트에서 발생할 경우 **상위 컴포넌트의 데이터 로딩이 끝나야지만 하위 컴포넌트의 데이터 로딩이 시작**되는 **UI Waterfall 현상이 발생**할 수 있습니다.
+
+<CodeSandbox 
+    src="https://codesandbox.io/embed/84cv4z?view=preview&module=%2Fsrc%2FApp.tsx"
+    title="react-ui-waterfall"
+    allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+    sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+/>
+
+
+또한 비동기 통신은 순서가 보장되지 않기 때문에 싱크가 맞지않는 데이터를 제공할 수 있을 뿐더러 if 조건문을 사용하는 명령형 코드이기 때문에 선언형 코드를 지향하는 React의 방향성과 맞지 않고, 코드의 가독성 또한 떨어지게 됩니다.
+
+
+## 사용법
+
+Suspense의 사용법은 아주 간단합니다. 아래의 코드처럼 리액트에서 기본으로 제공해주는 `<Suspense/>{:html}` 컴포넌트를 import 하여 props로 fallback UI를 전달하고, 자식으로는 비동기 요청을 발생시키는 컴포넌트를 작성해 주면 됩니다. 이 때, 비동기 동작을 하는 컴포넌트가 하나라도 있으면 React는 비동기 통신을 하는 동안 **children에 필요한 모든 코드와 데이터가 로드될 때까지 loading fallback을 보여**줍니다. 
+
+이렇게 코드를 작성하면 불필요한 if문을 사용하여 로딩 UI를 제어할 필요도 없고 필요 시 ErrorBoundary를 사용하여 에러 컴포넌트도 제어할 수 있습니다. 
+
+```tsx
+<Suspense fallback={<Loading />}>
+  {/* 비동기 컴포넌트가 하나라도 있으면 동작*/}
+  <AsyncComponent />
+  <NotAsyncComponent>
+</Suspense>
+```
+
+### Waterfall UI 해결하기
+
+앞에서 다뤘던 Waterfall UI도 Suspense를 이용하면 아주 쉽게 해결할 수 있습니다. 먼저 fetch할 함수를 부모 컴포넌트에 전달하고, 자식 컴포넌트에도 똑같은 함수를 props로 전달하면, Warterfall UI를 해결할 수 있습니다.
+
+
+먼저 딜레이를 만들어줄 비동기 함수를 구현합니다.
+```ts
+export function fetchDelay(ms: number) {
+  let user: any = null;
+  const suspender = new Promise((resolve) => {
+    setTimeout(() => {
+      user = {
+        id: 1,
+        name: "John Doe",
+        username: "johndoe",
+        email: "johndoe@example.com",
+      };
+      resolve(user);
+    }, ms);
+  });
+  return {
+    read() {
+      if (user === null) {
+        throw suspender;
+      } else {
+        return user;
+      }
+    },
+  };
+}
+```
+
+그리고 App.tsx에서는 부모컴포넌트를 불러오고, 비동기함수를 props로 전달해 줍니다.
+
+```tsx
+
+// App.tsx
+import { Suspense, lazy } from "react";
+import { fetchDelay } from "./fetchData";
+const ParentComponent = lazy(() => import("./ParentComponent"));
+import "./styles.css";
+
+export default function App() {
+  return (
+    <div className="App">
+      <h1>Suspense Waterfall Example</h1>
+      <Suspense fallback={<div>Loading Parents...</div>}>
+        <ParentComponent resource={fetchDelay(1500)} />
+      </Suspense>
+    </div>
+  );
+}
+```
+
+마지막으로 자식 컴포넌트에도 props로 App.tsx에서 전달한 비동기 함수를 전달하면 부모와 자식 컴포넌트 모두 비동기 처리가 끝난 후 렌더링이 시작 됩니다.
+
+```tsx
+// ParentCompoent.tsx
+import React, { Suspense } from "react";
+import ChildComponent from "./ChildComponent";
+
+interface ParentComponentProps {
+  resource: any;
+}
+
+const ParentComponent: React.FC<ParentComponentProps> = ({ resource }) => {
+  const delay = resource?.read();
+
+  return (
+    <div>
+      <h2>ParentCompoents Loaded</h2>
+      <Suspense fallback={<div>Loading Children..</div>}>
+        <ChildComponent resource={resource} />
+      </Suspense>
+    </div>
+  );
+};
+
+export default ParentComponent;
+
+```
+
+<CodeSandbox 
+    src="https://codesandbox.io/embed/84cv4z?view=preview&module=%2Fsrc%2FApp.tsx"
+    title="react-waterfall-suspense"
+    allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+    sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+/>
+
+## 동작 원리
+
+1. 비동기 작업 감지: Suspense는 자식 컴포넌트에서 발생하는 비동기 작업(예: 데이터 fetching)을 감지합니다.
+2. 렌더링 중단: 비동기 작업이 완료되지 않았을 경우, Suspense는 해당 컴포넌트의 렌더링을 일시 중단합니다.
+3. Fallback UI 표시: 렌더링이 중단된 동안 Suspense는 지정된 fallback UI(예: 로딩 인디케이터)를 표시합니다.
+4. 비동기 작업 완료 대기: Suspense는 모든 비동기 작업이 완료될 때까지 기다립니다.
+5. 동시 렌더링: 모든 비동기 작업이 완료되면, Suspense는 중단되었던 컴포넌트들을 동시에 렌더링합니다.
+6. 일관된 UI 업데이트: 이를 통해 부분적인 로딩 상태를 방지하고, 모든 데이터가 준비된 후 한 번에 UI를 업데이트할 수 있습니다.
+
