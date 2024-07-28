@@ -6,25 +6,25 @@ author: ohs6006
 thumbnail: "https://nextjs.org/_next/image?url=%2Fstatic%2Fblog%2Fnext-15-rc%2Fcreate-next-app-dark.png&w=2048&q=75"
 ---
 
-3번의 프로젝트 동안 `Next.js` 를 사용하고 있었지만 `Next.js` 의 렌더링 전략의 개념이 살짝 헷갈리는 부분이 있었습니다. 따라서 이번에는 그 개념들을 확실히 공부하고 정리해야겠다는 생각이 들어서
+3번의 프로젝트 동안 Next.js 를 사용하고 있었지만 Next.js 의 렌더링 전략의 개념이 살짝 헷갈리는 부분이 있었습니다. 따라서 이번에는 그 개념들을 확실히 공부하고 정리해야겠다는 생각이 들어서
 여러가지 글과 공식문서를 살펴보면서 공부했던 내용들을 적어 보겠습니다.
 
 <Callout type="info" row={true}>
   이 글은 **2024-06-23** 에 업데이트 되었습니다.
 </Callout>
 
-<Callout type="warn">
+<Callout type="warn" row={true}>
   이 글은 **HTML, CSS , JavaScript, TypeScript, React, Next.js**에 App 라우터를
   사용하는 13버전 이상의 버전을 설명하고 있습니다.
 </Callout>
 
 ## Next.js의 렌더링 전략
 
-Next.js 에서 사용하는 공식적인 렌더링 전략은 기본적으로 작성된 컴포넌트가 `Server Components` 인지 `Client Components` 인지에 따라 달라집니다.
+Next.js 에서 사용하는 공식적인 렌더링 전략은 기본적으로 작성된 컴포넌트가 Server Components 인지 Client Components 인지에 따라 달라집니다.
 
 ### Server Components
 
-Server Components는 기본적으로 Pre-rendering 방식으로 빌드되며 Server Components는 모두 이 방식을 사용하고 있습니다. 그리고 **Pre-rendering 과정**에서 **`data`를 어떻게 `cache` 하느냐에 따라서** **Static Rendering, Dynamic Rendering, Streaming** 방식으로 나뉘게 됩니다.
+Server Components는 기본적으로 Pre-rendering 방식으로 빌드되며 Server Components는 모두 이 방식을 사용하고 있습니다. 그리고 **Pre-rendering 과정**에서 ** data를 어떻게 cache 하느냐에 따라서** **Static Rendering, Dynamic Rendering, Streaming** 방식으로 나뉘게 됩니다.
 
 #### Pre-rendering
 
@@ -47,7 +47,7 @@ Server Components는 기본적으로 Pre-rendering 방식으로 빌드되며 Ser
 
 Static Rendering은 서버에서 미리 렌더링된 HTML을 제공하는 방식은 같지만 **빌드 시에 HTML을 만들고** 클라이언트에서 **요청 시 재사용**할 수 있는 방식 입니다. StaticSiteGeneration : SSG 라고도 하지만 공식 문서에서는 Static Rendering 이라고 쓰여져 있습니다.
 
-Next.js는 기본적으로 페이지를 생성할 때 이런 방식을 사용하고 있습니다. 아래의 코드에서 `fetch`를 사용하여 데이터를 받아오고 있는데 이때 **`cache`를 `defalut` 옵션인 `force-cache`로 설정하면 빌드 시 요청이 캐시되어 있기 때문에 다음에 다시 요청을 보내지 않고 재사용**할 수 있습니다.
+Next.js는 기본적으로 페이지를 생성할 때 이런 방식을 사용하고 있습니다. 아래의 코드에서 fetch를 사용하여 데이터를 받아오고 있는데 이때 ** cache를 defalut 옵션인 force-cache로 설정하면 빌드 시 요청이 캐시되어 있기 때문에 다음에 다시 요청을 보내지 않고 재사용**할 수 있습니다.
 
 Static Rendering 방식은 빌드 시 HTML을 만들기 때문에 가장 빠른속도로 유저와 상호작용 할 수 있으며, 주로 정적 블로그 게시물이나 제품 페이지와 같이 경로에 사용자에게 맞춤화되지 않고 **빌드 시점에 알 수 있는 데이터가 있는 경우**에 유용합니다.
 
@@ -67,9 +67,9 @@ export default async function Page() {
 
 Dynamic Rendering은 Static Rendering과는 다르게 **클라이언트가 요청 시 마다 HTML을 생성하는** Pre-rendering 방식입니다. ServerSideRendering : SSR 이라고도 하며 공식 문서에는 Dynamic Rendering 이라고 쓰여져 있습니다.
 
-Dynamic Rendering 방식은 `fetch`를 사용할 때 `cache` 옵션을 `no-store`로 설정하면 되는데 이렇게 설정하면 빌드시 요청하지 않고 클라이언트 요청마다 새로운 HTML을 만들어 제공합니다.
+Dynamic Rendering 방식은 fetch를 사용할 때 cache 옵션을 no-store로 설정하면 되는데 이렇게 설정하면 빌드시 요청하지 않고 클라이언트 요청마다 새로운 HTML을 만들어 제공합니다.
 
-또는 `Dynamic Functions` 라는 함수를 사용하여 서버에 요청하게 되면 자동적으로 Dynamic Rendering 방식으로 동작합니다. `Dynamic Functions` 는 아래와 같습니다.
+또는 Dynamic Functions 라는 함수를 사용하여 서버에 요청하게 되면 자동적으로 Dynamic Rendering 방식으로 동작합니다. Dynamic Functions 는 아래와 같습니다.
 
 - `cookies()` and `headers()`: 서버 컴포넌트에서 사용하면 요청 시 전체 경로가 동적 렌더링으로 선택됩니다.
 - `searchParams`: 페이지에서 searchParams 프로퍼티를 사용하면 요청 시 페이지가 동적 렌더링으로 선택됩니다.
