@@ -1,7 +1,6 @@
 import { IPostHeader } from "@/types/blog";
 import { TimerIcon } from "lucide-react";
 import Image from "next/image";
-import * as React from "react";
 import AlternativeThumbnail from "../common/alternative-thumbnail";
 
 interface IBlogHeaderProps extends IPostHeader {}
