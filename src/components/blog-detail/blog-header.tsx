@@ -24,7 +24,7 @@ const BlogHeader: React.FunctionComponent<IBlogHeaderProps> = ({
       <div className="text-lg font-semibold text-primary uppercase ">
         {category}
       </div>
-      <div className="w-full text-sm md:text-base  my-2 flex justify-center text-muted-foreground">
+      <div className="w-full text-sm md:text-base my-2 flex justify-center text-muted-foreground">
         <span className="text-sm">
           작성 •{" "}
           <time className="font-semibold text-sm sm:text-base">
@@ -37,7 +37,7 @@ const BlogHeader: React.FunctionComponent<IBlogHeaderProps> = ({
         </span>
       </div>
       {thumbnail ? (
-        <div className="relative rounded-md w-full min-h-[400px] overflow-hidden">
+        <div className="relative rounded-md w-full my-4 min-h-[400px] overflow-hidden">
           <Image
             alt="thumbnail"
             src={thumbnail}
@@ -51,7 +51,7 @@ const BlogHeader: React.FunctionComponent<IBlogHeaderProps> = ({
       ) : (
         <AlternativeThumbnail />
       )}
-      <div className="flex items-center justify-between w-full my-2 text-muted-foreground text-sm gap-x-4">
+      <div className="flex items-center justify-between w-full mt-2 text-muted-foreground text-sm gap-x-4">
         <div className="flex items-center gap-x-1 ">
           By
           <span className="font-bold">{author}</span>

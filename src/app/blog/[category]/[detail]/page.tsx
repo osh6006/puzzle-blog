@@ -34,13 +34,17 @@ export default async function BlogDetailPage({
   const blogIndex = parseIndex(blogDetail.content);
 
   return (
-    <div className="prose relative prose-sm sm:prose-base prose-img:rounded-lg prose-img:bg-cover lg:prose-lg xl:prose-xl 2xl:prose-xl dark:prose-invert mx-auto">
-      <BlogHeader {...blogHeader} />
-      <BlogBody blogDetail={blogDetail} />
-      <BlogSideBar blogIndex={blogIndex} />
-      <hr />
+    <>
+      <div className="w-full prose prose-sm sm:prose-base lg:prose-lg xl:prose-xl prose-img:mt-0 mx-auto">
+        <BlogHeader {...blogHeader} />
+      </div>
+      <div className="prose relative prose-sm sm:prose-base prose-img:rounded-lg prose-img:bg-cover lg:prose-lg xl:prose-xl 2xl:prose-xl dark:prose-invert mx-auto">
+        <BlogBody blogDetail={blogDetail} />
+        <BlogSideBar blogIndex={blogIndex} />
+        <hr />
+      </div>
       <Giscus />
-    </div>
+    </>
   );
 }
 
