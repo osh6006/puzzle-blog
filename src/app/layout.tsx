@@ -26,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="ko">
       <body className={cn("flex min-h-dvh flex-col", pretendard.className)}>
         <ThemeProvider
           attribute="class"
