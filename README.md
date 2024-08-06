@@ -154,16 +154,23 @@ $ npm run dev
 
 ### :heavy_check_mark: 메인 페이지
 
+![1](https://github.com/user-attachments/assets/08666903-5c20-4cd7-a3bf-129c5c0861a5)
+
 - 사용자가 블로그를 처음 방문 했을 때 보이는 화면입니다.
   - 블로그에 대한 소개와 블로그의 최신 글(20 개)을 불러옵니다.
 
 ### :heavy_check_mark: 블로그 페이지
+![2](https://github.com/user-attachments/assets/161c6c1b-b779-4dfb-9108-c0125dd5415d)
 
 ### :heavy_check_mark: 블로그 상세 페이지
+![3](https://github.com/user-attachments/assets/3ed10ddd-6413-4dd8-8f29-ffc3dd033d5f)
 
 ### :heavy_check_mark: 블로그 검색
+![4](https://github.com/user-attachments/assets/fbc475d6-894a-4b78-9ae0-036666a96eb5)
 
 ### :heavy_check_mark: 블로그 Theme
+![5](https://github.com/user-attachments/assets/973f8b78-f773-4854-b393-2e29ed73282f)
+
 
 ## :pencil2: 프로젝트를 통해 배운 점
 
