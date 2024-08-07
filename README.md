@@ -154,50 +154,56 @@ $ npm run dev
 
 ### :heavy_check_mark: 메인 페이지
 
-![1](https://github.com/user-attachments/assets/08666903-5c20-4cd7-a3bf-129c5c0861a5)
-
 - 사용자가 블로그를 처음 방문 했을 때 보이는 화면입니다.
   - 블로그에 대한 소개와 블로그의 최신 글(20 개)을 불러옵니다.
+  - glob 라이브러리를 이용해 로컬 디렉토리에서 mdx파일을 불러와 최신순으로 정렬하여 포스트를 불러왔습니다.
+
+![1](https://github.com/user-attachments/assets/08666903-5c20-4cd7-a3bf-129c5c0861a5)
 
 ### :heavy_check_mark: 블로그 페이지
+
+- 블로그 페이지는 헤더에서 blog 를 클릭했을 때 이동할 수 있는 페이지로, 카테고리 명으로 필터링을 할 수 있습니다.
+
+- glob 라이브러리와 path, fs 라이브러리를 이용해 카테고리를 불러오고, 필터링을 클릭 시 하여 블로그 글들을 최신 순으로 필터링 하였습니다.
+
 ![2](https://github.com/user-attachments/assets/161c6c1b-b779-4dfb-9108-c0125dd5415d)
 
 ### :heavy_check_mark: 블로그 상세 페이지
-![3](https://github.com/user-attachments/assets/3ed10ddd-6413-4dd8-8f29-ffc3dd033d5f)
 
-### :heavy_check_mark: 블로그 검색
+- 블로그 상세 페이지는 mdx 파일로 작성한 블로그 내용을 next-mdx-remote 라이브러리로 html 로 파싱하여 보여줍니다.
+
+- 이 떄 @tailwindcss/typography 라이브러리로 파싱된 html을 반응형으로 스타일링 하였습니다.
+
+- 오른쪽 사이드 바에서 소제목 목차를 이용하여 이동할 수 있고, 사이드바 아래의 버튼을 이용하여 댓글, 제일 위로 이동하기를 사용할 수 있습니다.
+
 ![4](https://github.com/user-attachments/assets/fbc475d6-894a-4b78-9ae0-036666a96eb5)
 
-### :heavy_check_mark: 블로그 Theme
-![5](https://github.com/user-attachments/assets/973f8b78-f773-4854-b393-2e29ed73282f)
+### :heavy_check_mark: 블로그 검색
 
+- 헤더에서 Search bar를 누르면 검색 팝업이 나타납니다.
+- 팝업에서 키워드를 검색하면 glob 라이브러리와 path, fs 라이브러리를 이용하여 해당 키워드를 포함하고 있는 제목 내용등의 리스트를 검색합니다.
+- 해당 키워드가 일치하면 하이라이트로 키워드를 표시합니다.
+
+![3](https://github.com/user-attachments/assets/3ed10ddd-6413-4dd8-8f29-ffc3dd033d5f)
+
+### :heavy_check_mark: 블로그 Theme
+
+- next-themes 라이브러리를 이용하여 light, dark, system 등 상황에 따른 다크모드를 구현하였습니다.
+
+![5](https://github.com/user-attachments/assets/973f8b78-f773-4854-b393-2e29ed73282f)
 
 ## :pencil2: 프로젝트를 통해 배운 점
 
 프로젝트를 통해 배운 점을 저의 블로그에 정리하였습니다.
 
-- [react에서 debounce 기능 구현하기](https://osh6006.github.io/posts/react%EC%97%90%EC%84%9C-debounce-%EA%B8%B0%EB%8A%A5-%EA%B5%AC%ED%98%84%ED%95%98%EA%B8%B0/)
-- [react에서 seo 최적화 해보기](https://osh6006.github.io/posts/react%EB%A1%9C-SEO-%EC%B5%9C%EC%A0%81%ED%99%94-%ED%95%98%EA%B8%B0/)
-- [react로 제네릭 컴포넌트 만들기](https://osh6006.github.io/posts/react-%EC%A0%9C%EB%84%A4%EB%A6%AD-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8-%EB%A7%8C%EB%93%A4%EA%B8%B0/)
-- [react와 react-router V6로 protected 경로 만들기](https://osh6006.github.io/posts/react%EC%99%80-react-router%EB%A1%9C-protected-%EA%B2%BD%EB%A1%9C-%EB%A7%8C%EB%93%A4%EA%B8%B0/)
-- [react와-zustand로 더 완벽한 modal 만들기](https://osh6006.github.io/posts/react%EC%99%80-zustand%EB%A1%9C-%EB%8D%94-%EC%99%84%EB%B2%BD%ED%95%9C-modal-%EB%A7%8C%EB%93%A4%EA%B8%B0/)
-- [react와 Zustand로 완벽한 다크모드 만들기](https://osh6006.github.io/posts/react%EC%99%80-zustand%EB%A1%9C-%EC%99%84%EB%B2%BD%ED%95%9C-%EB%8B%A4%ED%81%AC%EB%AA%A8%EB%93%9C-%EB%A7%8C%EB%93%A4%EA%B8%B0-with-tailwind-clsx/)
-- [react vite로 PWA 설정하기](https://osh6006.github.io/posts/react%EC%99%80-vite%EB%A1%9C-pwa-%EB%A7%8C%EB%93%A4%EA%B8%B0/)
-- [react에서 tanstack table 사용해 보기](https://osh6006.github.io/posts/React%EC%97%90%EC%84%9C-Tanstack-Table-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0/)
-- [react-query key factory로 관리하기](https://osh6006.github.io/posts/React-Query-key-Factory/)
-- [Vite React로 PWA 설정하기](https://osh6006.github.io/posts/react%EC%99%80-vite%EB%A1%9C-pwa-%EB%A7%8C%EB%93%A4%EA%B8%B0/)
+[Next.js에서 Sitemap 동적으로 작성하기](https://www.puzzler.life/blog/nextjs/Nextjs-sitemap)
+[Nextjs 에서 Shadcn UI 사용하기](https://www.puzzler.life/blog/nextjs/Nextjs-shadcnUI)
+[Nextjs 에서 fetch 사용하여 데이터 가져오기](https://www.puzzler.life/blog/nextjs/Nextjs-fetch)
+[https://www.puzzler.life/blog/nextjs/Nextjs-ssr](https://www.puzzler.life/blog/nextjs/Nextjs-ssr)
 
 ## :construction: 트러블 슈팅
 
 프로젝트 도중 발생한 트러블 슈팅에 대해 저의 블로그에 정리하였습니다.
-
-- [CORS Error 해결하기](https://osh6006.github.io/posts/react%EC%97%90%EC%84%9C-cors-%EC%97%90%EB%9F%AC-%ED%95%B4%EA%B2%B0%ED%95%98%EA%B8%B0/)
-- [Lighthouse 점수 개선하기](https://osh6006.github.io/posts/react%EB%A1%9C-lighthouse-%EC%A0%90%EC%88%98-%EA%B0%9C%EC%84%A0%ED%95%98%EA%B8%B0/)
-- [CRA 에서 Vite로 마이그레이션 하기](https://osh6006.github.io/posts/cra-%EC%97%90%EC%84%9C-vite-react-%EB%A1%9C-%EB%A7%88%EC%9D%B4%EA%B7%B8%EB%9E%98%EC%9D%B4%EC%85%98%ED%95%98%EA%B8%B0/)
-
-## :roller_coaster: 개선해야 할 사항
-
-- 배팅 사이트 예측 추가
 
 ## :memo: 라이센스
 
