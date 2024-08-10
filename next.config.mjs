@@ -10,6 +10,12 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "dart-ko.dev",
+        port: "",
+        pathname: "/assets/**",
+      },
+      {
+        protocol: "https",
         hostname: "lh3.googleusercontent.com",
         port: "",
         pathname: "/**",

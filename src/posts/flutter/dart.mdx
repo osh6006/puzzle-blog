@@ -1,0 +1,660 @@
+---
+title: Dart의 기본 알아보기 1
+date: 2024-08-01
+lastmod: 2024-08-07
+author: ohs6006
+thumbnail: "https://dart-ko.dev/assets/img/logo_lockup_dart_horizontal.png"
+---
+
+최근 Flutter 를 사용하여 모바일 앱 개발 공부를 시작하려고 하고 있는데, Flutter는 Dart 라는 언어로 이루어진 프레임워크이기 때문에 Dart에 대한 이해가 필수적이라고 생각했습니다. 따라서 오늘은 Dart라는 언어와 기본 문법에 대해서 공부했었던 내용들을 기록해 보겠습니다.
+
+<Callout type="info" row={true}>
+  이 글은 **2024-08-07** 에 업데이트 되었습니다.
+</Callout>
+
+## Dart
+Dart는 구글에서 개발한 프로그래밍 언어로, 클라이언트 개발에 중점을 두고 설계되었으며, 빠른 개발 속도(1초 이하의 stateful 핫리로드)와 높은 성능을 자랑합니다. Dart를 사용하면 웹, 모바일, 데스크톱 등 다양한 플랫폼에서 동작하는 애플리케이션을 만들 수 있습니다. Dart는 Flutter 앱을 구동하는 언어와 런타임을 제공할 뿐만 아니라, 코드 포맷, 분석, 테스트와 같은 개발자들의 핵심 작업들을 지원합니다. 
+
+### 언어적 특징
+
+Dart는 정적 타입언어로, 컴파일 타임에 타입 체크를 수행하여 런타임에 발견하기 어려울 수 있는 타입 관련 버그를 방지 합니다. 
+
+또한 Dart는 null 타입 안전성을 지원합니다 이는 개발자가 해당 변수의 값이 null 일 수 있음을 표시하지 않는다면, null 값을 가지지 못하게 한다는 것을 의미합니다. 견고한 null 안전성를 사용하여 Dart는 정적 코드 분석을 통해 런타임에서 null exception으로부터 개발자들을 보호합니다.
+
+```dart
+int? nullableNumber; // nullableNumber 변수는 null을 가질 수 있음
+int nonNullableNumber = 10; // nonNullableNumber 변수는 null을 가질 수 없음
+```
+
+Dart는 단일 스레드를 사용하여 멀티스레드 환경에서 발생할 수 있는 복잡한 문제들(예: 경쟁 상태, 데드락, 레이스 컨디션 등)을 피할 수 있습니다. 따라서 개발자는 동시성 관련 문제를 고민할 필요 없이 비동기 코드를 작성할 수 있습니다.
+또한 Javascript와 비슷하게  async와 await 키워드를 통해 비동기 프로그래밍을 쉽게 구현할 수 있도록 지원합니다. 이를 통해 비동기 코드를 동기 코드처럼 읽기 쉽고 직관적으로 작성할 수 있습니다.
+
+
+### 컴파일러
+
+Dart에서는 JIT(Just In Time) 컴파일러와 AOT(Ahead Of Time) 컴파일러를 사용하고 있는데 각각의 특징은 다음과 같습니다.
+
+- JIT(Just In Time) 컴파일러
+JIT 컴파일러는 프로그램 실행 중에 즉시 컴파일이 가능합니다. 빠른 개발 주기로 개발이 가능하지만 프로그램 실행이 시작될 때 코드를 실행하기 전에 분석 및 컴파일을 수행해야 하기 때문에 실행 속도가 느려진다는 단점이 존재합니다.
+
+- AOT(Ahead Of Time) 컴파일러
+AOT 컴파일러는 프로그램 작성 중(런타임 이전에) 컴파일을 실행합니다. 때문에 개발 생산성이 낮아진다는 단점이 있지만 실행 속도가 더 빠르다는 이점이 존재합니다. 
+
+
+Dart에서는 위의 두 가지 컴파일러를 적절히 이용하고 있는데, **개발을 진행할 때**에는 **JIT 컴파일러**의 Hot Reloading 기능을 이용하여 **개발자들의 생산성과 속도를 높이고**, **앱을 빌드할 때**에는 AOT 컴파일러를 이용하여 더 빠르고 가벼운 앱을 사용할 수 있도록 도와줍니다.
+
+
+### 다양한 라이브러리
+
+Dart 에서는 개발을 할 떄 유용한 기능을 제공하는 핵심 라이브러리를 제공합니다. 핵심 라이브러리들은 아래와 같습니다.
+
+- 내장 타입, 컬렉션, 그리고 Dart 프로그램을 위한 또 다른 핵심 기능 (dart:core)
+- 큐, 링크드 리스트, 해쉬맵, 이진 트리 같은 풍부한 컬렉션 (dart:collection)
+- JSON, UTF-8을 포함한 서로 다른 데이터 표현 간의 변환을 위한 인코더와 디코더 (dart:convert)
+- 수학과 관련된 상수, 함수, 난수 생성 (dart:math)
+- 웹이 아닌 애플리케이션을 위한 파일, 소켓, HTTP 그리고 I/O 지원 (dart:io)
+- Future 그리고 Stream 클래스와 함께 비동기 프로그래밍 지원 (dart:async)
+- 고정된 크기의 데이터를 효과적으로 다루는 리스트들 (예를 들어, unsigned 8-byte 정수)과 SIMD 숫자 타입 (dart:typed_data)
+- C 스타일 인터페이스를 제공하는 다른 코드와의 상호 운용성을 위한 외부 함수 인터페이스 (dart:ffi)
+- Isolate 를 사용한 동시(concurrent) 프로그래밍— 스레드와 비슷하지만 메모리를 공유하지 않고, 메시지로 통신하는 독립된 워커(worker) (dart:isolate)
+- 브라우저 및 DOM(Document Object Model)과 상호작용해야 하는 웹 기반 애플리케이션을 위한 HTML 엘리먼트와 기타 리소스 (dart:html)
+
+
+## 시작하기
+
+Dart는 Windows나 Linux, Mac 환경에서 SDK를 설치하여 시작하거나 DartPad라는 웹 사이트를 통해 간단하게 웹에서 사용이 가능합니다.
+
+이번 글에서는 Flutter를 사용하지 않고, 단순 Dart문법만 활용하려고 하기 때문에 저는 [DartPad 웹 사이트](https://dartpad.dev/)를 활용하였습니다.
+
+
+## 기본 문법
+
+### main 함수
+
+Dart 에서는 C언어와 마찬가지로 마지막에 무조건 main 함수를 호출하게 됩니다. 따라서 main 함수를 무조건 작성해 줘야 합니다.
+
+```dart
+// 무조건 작성해야 함
+void main() {
+    // 제일 뒤에 세미콜론도 작성해 줘야 함
+    print("hello world");
+}
+```
+
+### Variable
+
+#### Var
+
+var은 Dart 에서 사용하는 기본적인 변수로 C언어나 Java와 같이 **타입을 입력하지 않아도 자동으로 타입을 추론**해 줍니다. var의 값은 변할 수 있지만 **한번 지정된 타입은 다른 타입으로는 변경이 불가능**하고, **같은 타입만 가능**합니다. 주로 함수 내에서 사용하는 **지역 변수**의 경우에 사용합니다.
+
+예를 들어, 변수가 String 타입이면 같은 타입인 String 타입으로만 변수 값을 변환할 수 있습니다.
+
+```dart
+void main() {
+    var name = 'mikle';
+    name = 1; // error!
+    name = "test"; // success!
+}
+```
+
+#### 명시적인 타입 지정
+
+var를 사용하지 않고 String과 같이 **타입을 변수 앞에 입력하여 명시적으로 타입을 지정**할 수 있습니다. 주로 class에서 변수나 property를 선언할 떄 사용합니다.
+
+
+```dart
+void main() {
+    String name = 'mikle';
+    name = 1; // error!
+    name = "test"; // success!
+}
+```
+
+#### Dynamic Type
+
+Dart에서는 명시적인 타입 규칙을 사용하고 있지만 때때로 이 규칙을 회피할 수 있게 하는 방법이 있는데 이 방법이 바로 Dynamic Type 입니다. dynamic은 여러가지 타입을 가질 수 있는 변수를 생성할 때 사용합니다.
+
+자주 사용되진 않지만 **변수에 어떤 값이 올지 모르는 경우 사용**할 수 있습니다. 사용 방법은 **변수를 선언하고 초기화 하지 않거나**, 앞에 **dynamic 키워드**를 붙이면 됩니다.
+
+타입을 확인하려면 is 키워드를 사용하여 타입을 확인하면 됩니다.
+
+```dart
+void main() {
+    var dynamic_val;
+    dynamic dynamic_val2;
+
+    dynamic_val = "test";
+    dynamic_val = 13;
+    dynamic_val = true;
+
+    if(name is String){}; // 타입이 String인지 확인
+    if(name is Int){}; // 타입이 Int인지 확인
+    ...
+
+}
+```
+
+#### Null Safety
+
+Null Safety는 원래 Dart에는 없던 기능이지만 나중에 추가된 기능으로 **개발자가 null 값을 참조할 수 없게 만드는 기능**입니다. Null Safety는 컴파일 이전에 이 에러를 잡아 에러를 발생시킵니다.
+
+하지만 **개발 단계에서 null 값을 사용**해야할 때도 있습니다. 이럴 때는 **키워드 뒤에 ? 를 붙혀 사용**하면 됩니다.
+
+```dart
+void main(){
+    // error
+    String name = "test";
+    name = null; // null 
+
+    // success
+    String? name = "test";
+
+    print(name?.isNotEmpty); // true
+
+    name = null; // null 
+
+    print(name?.isNotEmpty); // null
+}
+```
+
+#### Final
+
+Final은 **JavaScript의 const** 처럼 한번 **값을 지정하면 수정되지 않는 상수를 만드는데 사용**됩니다.  
+
+```dart
+void main(){
+    final name = "test";
+    name = "mikle"; // error
+}
+```
+
+#### Late
+
+late는 **변수를 먼저 만들고 데이터를 나중에 넣을 수 있는 방법**으로, 주로 **api나 다른 함수를 사용하여 값을 불러올 때 변수를 선언한 이후에 값을 넣어줄 수 있는 기능** 입니다. 이 기능을 사용하면 개발자의 실수를 방지하고 안전하게 변수를 처리할 수 있습니다.
+
+
+```dart
+void main(){
+    late final String name;
+
+    print(name) // 접근 불가 Error
+
+    // api등 다른 작업이후 적용
+    name = "mikle";
+}
+```
+
+#### Constant
+
+const 는 **JavaScript의 const, dart의 final과는 다르게** **컴파일 타임에 상수**를 지정해 줍니다. 주로, **내가 원하는 상수의 값을 알고 있을 경우 const를 사용**하여 초기화 하고, **어떤 값인지 모르고, 그 값이 API로부터 오거나 사용자가 화면에서 입력해야 하는 값일 경우**라면 그건 const가 아닌 **final**이나 **var**가 되어야 합니다.
+
+```dart
+void main(){
+    const double pi = 3.14159; // 컴파일 타임 상수
+    final API_KEY = fetchApi // 컴파일 이후 값이 결정됨
+}
+```
+
+### Data Type
+
+#### Basic
+Dart의 기본 데이터 타입은 다른 언어와 비슷하게 String(문자열), bool(참 또는 거짓), int(정수), double(실수) 등이 있습니다. 
+
+```dart
+void main(){
+    String name = "name";
+    bool isBool = true;
+    int age = 123;
+    double price = 12.4;
+
+    // num은 정수와 실수 모두 가능
+    num x = 1124
+    x = 1.42
+}
+```
+
+#### Lists
+
+Dart의 List 는 다른 언어에서 사용하는 배열과 같습니다. add로 요소를 추가하거나 first와 last를 이용하여 각각 처음과 마지막 요소를 불러올 수 있으며 더 다양한 메소드를 제공합니다.
+
+
+```dart
+void main(){
+    var arr = [1,2,3,4];
+    List<int> numArr = [1,2,3,4];
+
+    // 요소 추가
+    arr.add(5);
+    
+
+}
+```
+
+Dart에서 List의 가장 큰 차이점은 collection if와 collection for 기능 입니다. **collection if**는 **List 안에 존재할 수도 안할 수도 있는 요소를 만들 수 있습니다**.
+
+```dart
+  var isExisit = true;
+  var arr = [
+    1,
+    2,
+    3,
+    4,
+    if (isExisit) 5, // isExisit 가 true 이면 요소가 생성됨
+  ];
+
+
+
+```
+
+**collection for**은 collection if와 비슷하게 **배열 안에 for 반복문으로 요소를 생성할 수 있습니다.**
+
+```dart
+void main() {
+  var firstNameArr = ["길동", "진호"];
+
+  var fullNameArr = [
+    "강감찬",
+    for (var firstName in firstNameArr) "홍 $firstName", // firstNameArr 요소들의 앞에 "홍"을 붙혀줌
+  ];
+}
+```
+
+<Callout type="info" row={false} >
+**"홍 $firstName"** 문법은 뭔가요??
+**String Interpolation** 이라고 불리는 문법으로 문자열 안에 변수를 담을 수 있는 기능 입니다. JavaScript의 템플릿 리터럴과 비슷한 기능으로 다음과 같이 사용할 수 있습니다.
+<br/>
+```
+// 변수만 사용할 경우 : "홍 $firstName"
+// 변수에 계산을 할 경우 : "내 나이는 ${12+age}" 
+```
+</Callout>
+
+#### Map과 Set
+
+Dart에서 Map은 자바스크립트의 객체와 같은 개념으로 아래와 같이 사용할 수 있습니다.
+
+```dart
+void main() {
+  var warrior = {
+    "name": "이순신",
+    "level": "12",
+    "has1Skills": false,
+  };
+
+  warrior.name 으로 접근 가능
+
+  // 또는 Map<String, Object> warrior 로 생성 가능
+  // 더 복잡하게  Map<List<int>, bool> 과 같이 복잡한 타입도 가능합니다
+}
+
+```
+
+Dart에서 Set은 배열과 비슷하게 아주 쉽게 생성할 수 있습니다. 아래와 같이 중괄호를 이용하여 생성하면 됩니다.
+
+
+```dart
+void main() {
+  var setTest = {1, 2, 3, 4};
+  // 혹은 Set<int> setTest = {1,2,3,4} 로 생성
+
+  setTest.add(5);
+  setTest.add(6);
+  setTest.add(7);
+}
+```
+
+### Functions
+
+Dart에서 기본적인 함수 생성 방법은 아래의 코드처럼 앞에 데이터 타입 키워드를 붙혀 함수의 리턴타입을 지정해 줄 수 있습니다.
+
+```dart
+void void_func() {
+  // 아무것도 리턴하지 않음
+  print("hello world");
+}
+
+String string_func(String name) {
+  return name;
+}
+
+void main() {
+  void_func();
+  var string_val = string_func("test!");
+}
+```
+
+Dart 에서는 기본적인 함수 생성 방법 말고 화살표로 간단히 함수를 생성할 수도 있습니다. 생성 방법은 아래와 같습니다. 생성 방식은 다르지만 모두 동일한 방법으로 동작합니다.
+
+주로 한줄 짜리 간단한 코드를 반환할 때 사용됩니다.
+```dart
+void void_func() => print("hello world");
+
+String string_func(String name) => name;
+
+void main() {
+  void_func();
+  var string_val = string_func("test!");
+}
+```
+
+#### Named Parameters
+
+**일반적인 함수에 여러가지 파라미터를 전달할 경우** 사용자가 **어떤 파라미터를 어떻게 써야하는지 잊어**버릴 수 있습니다. 이를 방지하기 위해서 **Dart에서는 Name argument** 기능을 지원합니다. Name argument는 괄호 안에 **순서와 상관없이 파라미터의 key와 value 값을 지정해 주면 순서에 상관없이 사용**할 수 있습니다.
+
+또한 required 키워드를 앞에 붙혀주면 사용할 때 어떤 값을 입력해야 하는지도 강제할 수 있습니다.
+
+```dart
+String user_func(String name, int age, bool isMale) => name;
+
+void main() {
+  var test = user_func(
+    age: 24,
+    isMale: true,
+    name: "mikle",
+  );
+}
+
+// 아래의 방법처럼 초기화도 가능
+String user_func(String name = "mikle", int age=24, bool isMale = true) => name;
+user_func();
+
+// required 키워드 입력
+
+String user_func(
+    required String name = "mikle", 
+    required int age=24, 
+    required bool isMale = true,
+) => name;
+```
+
+#### Optional Positional Parameters
+
+만약 함수의 파라미터에 조건부로 사용하지 않을 값을 지정해야 할 때 Dart에서는 아래와 같이 대괄호를 사용하여 조건부로 파라미터를 전달할 수 있습니다.
+
+```dart
+String user_func(String name, int age, [bool? isMale = true]) => name;
+
+void main() {
+  var test = user_func(
+    age: 24,
+    name: "mikle",
+  );
+}
+```
+
+### Operator
+
+Dart에서는 다른 언어와 마찬가지로 많은 Operator를 지원하고 있습니다. 하지만 그 중에서도 **??**, **?=**가 새롭게 추가되었는데 각각의 기능은 아래와 같습니다.
+
+- ?? : 다른 언어에서 삼항 연산자를 짧게 만들어 주는기능 입니다. `left ?? right` 일 경우 왼쪽 값이 참 일경우에는 왼쪽 값을 반환하고 참이 아닐 경우 오른쪽 값을 반환합니다.
+
+- ??= : 값이 null일 경우에만 초기화 시켜 줍니다. `name ??= 'mikle'` 일 경우 name이 null이라면 mikle이 되고 null이 아니라면 값을 할당하지 않습니다.
+
+```dart
+
+// ??
+void main() {
+  var numbers = [1, 2, 3, 4];
+  var test = numbers.length > 10 ?? false; // 10보다 클 경우 true 아니면 false
+
+  print(test);
+}
+
+// ??=
+void main() {
+  String? name;
+
+  name ??= 'mikle';
+
+  // name이 null이 아니므로 안됨
+  name ??= 'another';
+}
+```
+
+### Typedef
+
+Dart 에서는 Typescript처럼 typedef 키워드로 타입을 지정하여 여러가지 복잡한 타입을 설정할 수 있습니다. 주로 여러가지 함수의 타입을 지정하거나 `List<int>`와 같이 이름이 긴 변수를 줄이기 위해서 사용합니다.
+
+```dart
+typedef CustomType = List<int>;
+
+typedef UserInfo = Map<String, String>;
+
+
+void main() {
+  CustomType numbers = [1, 2, 3, 4];
+  UserInfo = {
+    name :"mikle",
+    ...
+  }
+}
+
+```
+
+### Class
+
+Flutter에서는 컴포넌트를 class로 작성하고, 이 외에도 다양한 상황에서 class를 사용하기 때문에 아주 중요한 개념이며, 반드시 학습 해야 한다고 생각합니다.
+
+#### 기본 사용법
+기본적인 class를 작성하는 방법은 다른 언어와 같이 class라는 키워드를 사용하고 생성한 class를 불러와서 사용합니다.
+
+```dart
+class User{
+    String name = 'mikle';
+    int age = 12;
+
+    // 수정할 수 없음
+    final type = 'human'
+
+    // this.name을 사용할 필요 없음
+    void getName(){
+        print(name)
+    }
+}
+
+void main() {
+  var user = User();
+  // 클래스에 접근
+  user.name;
+  user.age;
+  user.getName();
+}
+```
+
+#### Constructors
+
+다른 언어의 class와 마찬가지로 생성자를 생성하여 인스턴스를 초기화 할 수 있습니다. 다른 언어와 다른 점은 생성자의 파라미터에 this 를 사용하여 즉시 초기화 시켜 줄 수 있기 때문에 아주 간단하게 사용이 가능 합니다. 
+
+```dart
+class User{
+
+    final String name;
+    int age;
+
+    // 생성자에서는 this 사용
+    User(this.name, this.age);
+
+    // this.name을 사용할 필요 없음
+    void getName(){l
+        print(name);
+    }
+}
+
+void main() {
+  var user = User('mike', 12);
+  user.getName();
+}
+```
+
+
+#### Named Constructors
+
+Dart 에서는 class를 초기화하는 메소드를 만들 수 있는데, 예를 들어 User가 있고 생성자로는 나이와 이름만 받고, 사는 지역은 바로 초기화 한다고 했을 때 사용할 수 있습니다.
+
+```dart
+class User{
+
+    final String name;
+    int age;
+    String city;
+
+    // 생성자에서는 this 사용
+    User(this.name, this.age);
+
+    User.createSeoul({
+        required String name,
+        required int age
+    }) : this.age = age,
+         this.name = name,
+         this.city = 'Seoul';
+
+    // this.name을 사용할 필요 없음
+    void getName(){l
+        print(name);
+    }
+}
+
+void main() {
+  var user = User('mike', 12);
+  user.createSeoul(name:'mikle', age:13);
+}
+```
+
+#### Cascade Notation
+
+Cascade Notation는 Class에서 생성한 인스턴스의 값을 쉽게 변환하는 문법으로, 인스턴스를 생성할 때 뒤에 세미콜론을 빼고 변경하려는 값 앞에 ..을 대신 붙혀서 원하는 값을 변경합니다. 아래의 코드를 보면 이해하기 쉽습니다.
+
+```dart
+class People {
+  String name;
+  int age;
+
+  People({
+    required String this.name,
+    required int this.age,
+  });
+
+  // this.name을 사용할 필요 없음
+  void getName() {
+    print(name);
+  }
+}
+
+void main() {
+  var people = People(name: 'mikle', age: 12)
+    ..name = 'test'
+    ..age = 24;
+}
+```
+
+#### Enum
+
+Enum은 개발자가 변수를 사용할 떄 실수하는 것을 방지할 수 있게 도와줍니다. 예를들어 색상을 지정할 때 색상이 red, blue 두가지가 있다면 이 두가지로 제한을 두어서 개발자가 다른 내용을 입력하는 것을 방지합니다. 
+
+```dart
+// 색을 red blue로 제한
+enum Color { red, blue }
+
+class People {
+  String name;
+  int age;
+  Color color;
+
+  People(
+      {required String this.name,
+      required int this.age,
+      required Color this.color});
+
+  // this.name을 사용할 필요 없음
+  void getName() {
+    print(name);
+  }
+}
+
+void main() {
+  // color는 red or blue로만 입력
+  var people = People(name: 'mikle', age: 12, color: Color.red);
+}
+```
+
+#### Abstract Classes
+
+Abstract Classes는 다른 클래스들이 직접 구현해야하는 메소드들을 모아놓은 것으로 예를 들어 Animal이라는 클래스가 있으면 Animal의 걷기, 뛰기, 숨쉬기 라는 메소드를 미리 정의해 놓고 나중에 Tiger, Bear같은 클래스가 상속받아 사용할 수 있게 합니다.
+
+```dart
+abstract class Animal {
+  void walk();
+  void run();
+  String getName();
+}
+
+class Tiger extends Animal {
+  void walk() {}
+  void run() {}
+  String getName() {
+    return "test";
+  }
+}
+```
+
+#### Inheritance
+
+Inheritance는 다른 언어에서 사용하는 상속과 마찬가지로 자식 클래스가 부모의 클래스를 상속할 수 있는 기능입니다. super 키워드를 사용하며 아래와 같이 사용할 수 있습니다. 또한 @overrid 키워드를 이용하여 부모의 메소드도 자식 클래스에서 커스텀 할 수 있습니다.
+
+```dart
+abstract class Animal {
+  final String name;
+  Animal({required this.name});
+  String getName() {
+    return name;
+  }
+}
+
+class Tiger extends Animal {
+  // 부모에게서 상속
+  Tiger({required String name}) : super(name: name);
+
+  @override
+  String getName() {
+    return super.getName() + "<= Animal 에서 커스텀";
+  }
+}
+
+void main() {
+  var tiger = Tiger(name: 'tiger');
+  print(tiger.getName());
+}
+```
+
+#### Mixins
+
+Mixins은 생성자가 없는 클래스를 의미 합니다. 클래스에 프로퍼티들을 추가할 때 사용하는 기능인데, with 라는 키워드를 사용하여 상속이 아닌 내부의 프로퍼티와 메소드만을 가져옵니다.
+
+```dart
+mixin Body {
+  final double height = 220.5;
+}
+
+mixin Runner {
+  void run() => print("run!");
+}
+
+class Tiger with Body, Runner {}
+
+void main() {
+  var tiger = Tiger();
+  tiger.run(); // run!
+  print(tiger.height); // 220.5
+}
+```
+
+
+## 결론
+
+Flutter는 Dart라는 언어로 이루어진 프레임워크 입니다. 따라서 Flutter를 더 잘 사용하기 위해서 반드시 기본 개념과 다른 언어와의 차이점을 알아야 한다고 생각했습니다.
+
+## 참고 사이트
+
+https://nomadcoders.co/dart-for-beginners/lectures/4124
+https://dartpad.dev/
+https://dart.dev/guides
