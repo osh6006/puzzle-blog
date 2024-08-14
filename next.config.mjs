@@ -68,6 +68,12 @@ const nextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "docs.flutter.dev",
+        port: "",
+        pathname: "/assets/images/**",
+      },
     ],
     formats: ["image/webp", "image/avif"],
   },

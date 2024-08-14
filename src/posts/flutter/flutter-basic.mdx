@@ -1,0 +1,122 @@
+---
+title: Flutter 시작하기
+date: 2024-08-15
+lastmod: 2024-08-15
+author: ohs6006
+thumbnail: "https://storage.googleapis.com/cms-storage-bucket/6a07d8a62f4308d2b854.svg"
+---
+
+이전 글에서는 Flutter를 배우기 위한 기초 단계로 Dart 프로그래밍 언어에 대해 간단히 정리해 보았습니다. Dart는 Flutter의 핵심 언어로, Flutter의 모든 기능을 구현하는 데 사용됩니다. 이번 글에서는 Dart로 이루어진 Flutter의 주요 개념과 기능을 자세히 살펴보겠습니다. Flutter를 더욱 효과적으로 활용하기 위해 이해해야 할 중요한 요소들을 함께 알아보겠습니다.
+
+<Callout type="info" row={true}>
+  이 글은 **2024-08-10** 에 업데이트 되었습니다.
+</Callout>
+
+## Flutter
+
+Flutter는 2017년에 구글이 만든 오픈소스 프레임워크로, 처음에는 iOS와 안드로이드를 지원하는 크로스 플랫폼이었지만 이후 **웹, 데스크톱 앱, IOT등 다양한 환경에서도 사용**할 수 있게 업데이트 되었습니다. 따라서 Flutter를 사용하면 하나의 플랫폼으로 여러가지 멀티 플렛폼 환경에서 앱을 빌드 및 테스트할 수 있기 때문에 다양한 분야에서 활용이 가능 합니다.
+
+### Trusted by many
+
+Flutter가 나온지 벌써 7년이 지난 시점이기 때문에 Flutter는 매우 안정화 되어있고 거대해졌습니다. 약 150~200만명이 Flutter를 사용한 경험이 있고, 도요타, 틱톡, 알리바바 등 글로벌 기업들도 Flutter를 사용한 앱을 서비스하고 있기 때문에 Flutter는 전세계적으로 신뢰받고 있는 플랫폼 이라고 할 수 있습니다.  
+
+### 구글 서비스와의 원할한 통합
+
+Flutter는 Google이 만들었기 때문에 firebase, Google Ads, Google Pay, Google Maps등 모든 구글 서비스와의 원활한 통합이 가능합니다. 개발자들은 앱을 만들 때 더 손쉽게 구글 서비스에 접근이 가능하기 때문에 개발 시간과 코드 라인이 단축 됩니다. 
+
+## Flutter의 동작 원리
+
+우리가 Android나 iOS의 네이티브 앱을 개발할 때 Java나 C#과 같은 코드로 해당 운영체제에 직접적으로 요청합니다. `ex) text, input 요소를 만들어줘` 그러면 운영체제는 해당 코드를 이해하고, 안드로이드 버튼 혹은 iOS 버튼을 만들어 줍니다.
+
+하지만 Flutter에서는 **Android나 iOS를 만드는 직접적인 기능은 존재하지 않습**니다. 대신에 Flutter에서는 C, C++ 언어로 구성되어 있는 엔진을 사용하게 됩니다. 이 엔진들은 앱에서의 실제 UI를 렌더링을 책입져 줍니다.
+
+![Flutter 아키텍쳐](https://docs.flutter.dev/assets/images/docs/arch-overview/archdiagram.png)
+
+따라서 **Flutter는 Dart를 이용하여 개발자가 코딩을 하게 되면 C, C++ 엔진이 대신 운영체제와 대화를 하며 UI를 렌더링 하는 방식으로 동작**하게 됩니다. 
+
+또한 이 엔진이라는 것은 Android나 iOS와 같은 운영체제가 UI를 렌더링 하는 것이 아닌, **운영체제는 엔진을 실행하는 역할**을 하게 되고, **이 엔진이 프레임 워크를 동작시키고, UI를 그려주는 역할**을 하게 됩니다.
+
+Flutter는 **엔진이 모든 렌더링을 관여하기 때문에 iOS나 Android의 위젯과는 UI가 달라보일 수 있다**는 단점이 있지만, 오히려 이 단점은 **화면 모든 픽셀을 조절할 수 있다는 점에서는 아주 강점**이 됩니다. 바로 **모든 애니메이션, Navigation등을 통제할 수 있기** 때문입니다.
+
+더 자세한 사항은 [여기](https://docs.flutter.dev/resources/architectural-overview)에서 확인이 가능 합니다.
+
+<Callout type="info">
+**위 이미지에 제일 아래에 있는 Embedder은 뭔가요??**
+<br/>
+Embedder은 다양한 운영체제에서 Flutter의 엔진을 가동시키게 하는 runner 프로젝트로 맥, 리눅스, 윈도우 등 다양한 Embedder가 존재합니다.
+</Callout>
+
+## Flutter vs React Native
+
+Flutter와 비슷한 크로스 플랫폼 프레임워크로 React Native가 있습니다. 두 플랫폼은 모두 크로스 플랫폼을 지원하지만 약간은 다른 차이가 있습니다.
+
+Flutter는 **C,C++로 이루어진 엔진이 모든 렌더링 역할을 맡아 실행**하게 됩니다. 이러한 이유로 완전히 **Native와 똑같은 UI를 구사할 수 없기** 때문에 네이티브 앱 운영체제 상에서 가능한 위젯을 사용할 수 없습니다. 하지만 **세밀한 디자인 요구사항이 들어가 있거나 요소나 애니메이션을 전부 커스터마이징 하고 싶을 때 아주 유용하게 사용**될 수 있습니다.  
+
+React Native는 UI를 만들면 **iOS와 Android 모두 각각의 운영체제에 맞는 UI로(Flutter는 똑같이 보임) 보여집니다.** React Native는 자바스크립트로 코드를 작성하면 운영체제의 네이티브 앱 처럼 보이는 컴포넌트와 위젯을 만들어 내기 때문에 **각각의 플랫폼에서 사용하는 네이티브 위젯을 보여주고 싶으면 React Native를 사용**하면 됩니다.
+
+## Flutter 시작하기
+
+Flutter를 설치는 다양한 환경에서 설치할 수 있습니다. 공식 홈페이지에서는 Windows, macOS, Linux, Chrome OS 4가지를 지원하고 있고, SDK를 설치 후 시뮬레이터를 설치하면 됩니다. 저는 Windows 운영체제를 사용하고 있으므로 윈도우 기준으로 설치를 진행하였습니다.
+
+### SDK 다운로드
+
+SDK를 설치하는 많은 방법이 있겠지만 저는 Chocolatey 라는 cmd에서 소프트웨어 설치를 편리하게 할 수 있는 도구를 이용하였습니다. 
+
+#### Chocolatey 설치
+
+chocolatey [공식 홈페이지](https://chocolatey.org/install)에 가서 Choose How to Install Chocolatey: Individual 옵션을 선택해 줍니다. 
+
+cmd나 power shell을 마우스 우측 클릭 후 관리자 권한으로 실행합니다. 이후, `Get-ExecutionPolicy` 라는 명령어를 입력하고 Restricted 해당 메시지가 반환 되면 `Set-ExecutionPolicy AllSigned` 혹은 `Set-ExecutionPolicy Bypass -Scope Process` 명령어 둘중 하나를 쉘에 입력해줍니다.
+
+마지막으로 `Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))` 명령어를 입력 후 실행합니다.
+
+설치가 완료되면, choco 혹은 choco -?를 입력해 정상 설치 되었는지 확인합니다.
+
+더 자세한 방법은 [공식 홈페이지](https://chocolatey.org/install)를 참고하시면 됩니다.
+
+#### Flutter 설치
+
+Chocolatey를 설치했으니 바로 명령어로 `choco install flutter`를 입력해 줍니다. 선택창이 출력 된다면 y를 입력해 줍니다. 설치가 끝나면 flutter 명령어를 입력해 에러 메시지 제외 다른 메시지가 출력 되면 성공입니다.
+
+
+### 시뮬레이터 다운로드
+
+시뮬레이터는 항상 공식 문서에서 권장 하는 방식이 변합니다. 따라서 공식문서에서 제공하는 가이드라인을 확인하시고 천천히 해보시길 바랍니다. 
+
+[공식문서 바로가기](https://docs.flutter.dev/get-started/install/windows/mobile#configure-android-development)
+
+### 설치 확인
+
+시뮬레이터까지 설치가 완료되었으면 다시 power shell에 `flutter doctor` 명령어를 실행하여 설치가 잘 되었는지 어떤 부분이 부족한지 확인합니다.
+
+
+<Callout type="danger" row={false}>
+  **만약 Unable to find git in your PATH. 에러가 발생하면 아래의 명령어를 입력해 보세요!**
+  <br/>
+  <code className="w-fit">
+    git config --global --add safe.directory '*' 
+  </code>
+</Callout>
+
+### VSCode Extention 설치
+
+저는 코드 에디터로 VSCode를 사용하고 있기 때문에 VSCode에 Flutter에 필요한 `Dart`와 `Flutter` 익스텐션을 설치하였습니다.
+
+
+### 실행하기
+
+모든 설치가 완료되었으면 이제 터미널을 실행하고 프로젝트를 만들 폴더에 아래와 같은 명령어를 입력해 줍니다.
+
+```
+flutter create 프로젝트 이름
+```
+
+그리고 VSCode 오른쪽 하단에 있는 가상 머신 활성화를 하여, android 가상 머신을 활성화 하고, 오른쪽 위에 있는 start debugging 버튼을 눌러 실행하면 아래의 이미지와 같이 시뮬레이터에 처음에 빌드된 앱이 실행 됩니다.
+
+<img src="https://res.cloudinary.com/dxesudkxn/image/upload/v1723632338/blog/Flutter/ncxdrqyxn9lq0t1pqobh.png" className="max-h-[100px] mx-auto"/>
+
+## 결론
+
+오늘은 Flutter에 대한 이론적인 부분 및 설치 방법에 대해서 다뤄 보았습니다. 사실 App을 개발하려면 Android와 iOS 두 기기 모두에서 활용해야 하는데 Window 운영체제로는 불가능 하기에 추후에 Mac을 구매해야 겠다는 생각이 들었습니다.
+
+## 참고 사이트
