@@ -1,0 +1,216 @@
+---
+title: Flutter 시작하기 2
+date: 2024-08-15
+lastmod: 2024-08-15
+author: ohs6006
+thumbnail: "https://storage.googleapis.com/cms-storage-bucket/6a07d8a62f4308d2b854.svg"
+---
+
+
+지난 글에서는 Flutter의 이론적 개념과 설치 방법에 대해서 알아보았습니다. 이번에는 설치된 Flutter를 바탕으로 직접 코드를 작성하면서 Flutter를 학습해 보겠습니다.
+
+
+## Widget
+
+Flutter로 만들어진 앱은 각각의 Widget들이 조합되어 구성됩니다. Flutter는 수 많은 Widget들이 있으며 공식문서에서 제공하는 Widget과 커뮤니티에서 만든 커스텀 Widget도 다운로드할 수 있습니다. 
+
+Flutter에서 사용되는 Widget은 모두 build 메소드를 구현해야 하는데 build 메소드는 Widget UI를 만들어 반환해 줍니다. 또한 Widget을 사용할 떄는 각 Widget이 정해놓은 규칙을 따라야 하는데 예를 들어 StatelessWidget을 사용할 때에는 아래의 코드처럼 작성할 수 있습니다.  
+
+
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(App());
+}
+
+class App extends StatelessWidget {
+
+  // 빌드 생성
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    // meterial, cupertino 는 각각 구글과 애플의 UI 시스템 입니다.
+
+    // UI를 반환 UI는 또 다시 각각의 위젯들로 구성되어 있습니다.
+    return MaterialApp(
+      home: Scaffold(
+        // 상단 바
+        appBar: AppBar(
+          title: Text('Helloo Flutter!'),
+        ),
+        body: Center(
+          child: Text("Hello Wrld"),
+        ),
+      ),
+    );
+
+    // return CupertinoApp();
+  }
+}
+```
+
+### Custom Widget
+
+위에서 말했듯이 Flutter는 다양한 Widget들이 조립되어 이루어져 있습니다. 이 때 우리가 사용할 Widget을 다양한 Widget에서 **재사용** 하고 싶으면 어떻게 할까요? 바로 Custom Widget을 만들어 주면 됩니다. Custom Widget은 리액트의 컴포넌트처럼 다양한 곳에 재사용을 할 수 있습니다.
+
+아래의 코드에서 볼 수 있듯이 main.dart 에서는 여러가지 CardWidget을 사용하고 있고, card.dart React의 props 처럼 Widget에서는 class의 생성자로 카드에 색상이나 이름 등을 넘겨주고 생성자로 생성된 변수는 다른 위젯에 사용하여 다양한 스타일을 줄 수 있습니다.
+```
+// main.dart
+import 'package:flutter/material.dart';
+import 'package:toonflix/widgets/card.dart';
+
+
+void main() {
+  runApp(App());
+}
+
+class App extends StatelessWidget {
+
+  // 빌드 생성
+  @override
+  Widget build(BuildContext context) {
+
+    // UI를 반환 UI는 또 다시 각각의 위젯들로 구성되어 있습니다.
+    return MaterialApp(
+      home: Scaffold(
+        body: Center(
+        child:  Column(
+                  children: [
+                    Card(
+                      name: "Euro",
+                      code: "EUR",
+                    ),
+                    Card(
+                      name: "Bitcoin",
+                      code: "BTC",
+                    ),
+                    Card(
+                      name: "Dollar",
+                      code: "USD",
+                    )
+                  ],
+                ),
+        ),
+      ),
+    );
+
+    // return CupertinoApp();
+  }
+}
+```
+
+```dart
+// card.dart
+
+import 'package:flutter/material.dart';
+
+class Card extends StatelessWidget {
+  final String name, code;
+  final _blackColor = const Color(0xff1f2123);
+  final _whiteColor = Colors.white;
+
+  const CurrencyCard({
+    super.key,
+    required this.name,
+    required this.code,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+
+    return 
+        Padding(
+          padding: const EdgeInsets.all(30),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: TextStyle(
+                      color: isInverted ? _whiteColor : _blackColor,
+                      fontSize: 32,
+                      height: 1,
+                    ),
+                  ),
+                  Text(
+                    code,
+                    style: TextStyle(
+                      color: isInverted
+                          ? const Color.fromRGBO(255, 255, 255, 0.8)
+                          : _blackColor,
+                          fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+  }
+}
+
+```
+
+### StatefulWidget과 StatelessWidget
+
+Flutter에서 자주 사용하는 커스텀 위젯으로 StatefulWidget과 StatelessWidget을 나눌 수 있는데, **StatefulWidget은 상태를 가지고 있는 Widget으로, 상태에 따라 변화하는 데이터를 실시간으로 다룰** 수 있고, **StatelessWidget은 상태는 관계 없이 build로 UI만을 반환**시킵니다. 위에서 만든 Widget은 StatelessWidget으로 상태와는 관계없는 Widget 입니다.
+
+
+```dart
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  int _counter = 0;
+
+  void _incrementCounter() {
+    setState(() {
+      _counter++;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('StatefulWidget Example'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'You have pressed the button this many times:',
+              ),
+              Text(
+                '$_counter',
+                style: Theme.of(context).textTheme.headline4,
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _incrementCounter,
+                child: Text('Increment'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```

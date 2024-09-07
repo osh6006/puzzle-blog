@@ -1,0 +1,143 @@
+---
+title: Next.js에서 Middleware 다루기
+date: 2024-07-08
+lastmod: 2024-09-07
+author: ohs6006
+thumbnail: ""
+---
+
+Next.js에서 효율적으로 페이지를 렌더링하기 위한 여러 도구 중 하나가 미들웨어(Middleware)입니다. 최근 팀 프로젝트에서 페이지를 렌더링하기 전 필요한 작업을 처리하기 위해 Next.js의 미들웨어 기능을 적극적으로 활용하게 되었습니다. 미들웨어는 요청을 가로채어 리다이렉션, 인증, 데이터 전처리 등의 작업을 할 수 있어, 클라이언트 요청을 더 효율적으로 관리할 수 있습니다.
+
+이 글에서는 우리가 어떻게 Next.js 미들웨어를 사용하여 라우팅 전에 어떤 요청을 처리했는지 정리하고자 합니다.
+
+<Callout type="info" row={true}>
+  이 글은 **2024-09-07** 에 업데이트 되었습니다.
+</Callout>
+
+### Middleware
+
+Next.js에서 제공하는 미들웨어는 요청이 완료되기 전에 코드를 실행할 수 있는 방법으로, **클라이언트의 요청(Request)과 서버의 응답(Response) 사이에서 실행**되며, 요청을 가로채서 필요한 작업을 처리하는 역할을 합니다. 즉, **페이지를 렌더링하기 전에 특정 작업을 수행하거나, 요청을 조작**할 수 있는 중간 계층의 로직입니다.
+
+### Use Cases
+
+Next.js에서는 다양한 상황에서 미들웨어를 활용할 수 있습니다. 아래는 Next.js의 공식문서에서 제공하는 미들웨어가 유용하게 사용되는 케이스 입니다.
+
+- 인증 및 권한 부여: 특정 페이지나 API 경로에 대한 액세스 권한을 부여하기 전에 사용자 신원을 확인하고 세션 쿠키를 확인합니다.
+- 서버 측 리디렉션: 특정 조건(예: 지역, 사용자 역할)에 따라 서버 수준에서 사용자를 리디렉션합니다.
+- 경로 재작성: 요청 속성에 따라 API 경로나 페이지에 대한 경로를 동적으로 다시 작성하여 A/B 테스트, 기능 출시 또는 레거시 경로를 지원합니다.
+- 봇 감지: 봇 트래픽을 감지하고 차단하여 리소스를 보호합니다.
+- 로깅 및 분석: 페이지나 API에서 처리하기 전에 요청 데이터를 캡처하고 분석할 수 있습니다.
+- 기능 플래깅: 원활한 기능 출시 또는 테스트를 위해 기능을 동적으로 활성화하거나 비활성화합니다.
+
+<Callout
+  type="warn"
+  row={false}
+  title="미들웨어는 성능상 최적의 방법이 아닐 수 있습니다."
+>
+  미들웨어는 항상 페이지를 요청하기 전에 실행되기 때문에 무거운 계산작업, 오랜 시간이 걸리는 데이터 페칭, 광법위한 세션 관리, 직접적인 데이터베이스 작업 등, 무겁고 복잡한 작업이 수행된다면 프로젝트의 성능에 큰 영향이 있을 수 있습니다.
+</Callout>
+
+### 사용 방법
+
+미들웨어를 실제로 사용하는 방법은 매우 간단합니다. `app` 폴더가 있는 동일한 위치에 `middleware.ts` 파일을 만들고 아래와 같이 정의합니다. 
+
+```ts
+// middleware.ts
+
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+ 
+// 이 함수는 내부에 async await을 사용할 수 있습니다.
+export function middleware(request: NextRequest) {
+  return NextResponse.redirect(new URL('/home', request.url))
+}
+ 
+// 일치되는 라우팅에만 미들웨어가 적용됩니다.
+export const config = {
+  matcher: '/about/:path*',
+}
+```
+
+### 프로젝트에 적용한 방법
+
+Next.js에서 middleware를 사용하는 다양한 방법이 있지만 제가 사용한 방법은 **루트 경로에 진입 시 다른 경로로 이동** 하는 방법과 서버 컴포넌트에서 pathname을 사용하기 위해 **헤더에 pathname을 적용하여 페이지로 전달**하는 방법을 사용하였습니다.
+
+#### 루트경로 진입 시 다른 경로로 이동
+
+제가 사용하는 팀 프로젝트에서 루트 경로는 `/recruit`이기 때문에 사용자가 처음 경로인 `/`에 접근했을 경우 `/recruit` 경로로 이동시켜야 했습니다. 따라서 아래와 같이 코드를 작성하여 사용자가 해당 경로로 접근하였을 경우 이동을 시켜주었습니다.
+ 
+```ts
+// middleware.ts
+import { NextRequest, NextResponse } from 'next/server';
+
+export function middleware(request: NextRequest) {
+
+  // 현재 url 가져오기
+  const url = request.nextUrl;
+
+  // 루트경로일 경우 /recruit 으로 이동
+  if (url.pathname === '/') {
+    url.pathname = '/recruit';
+    return NextResponse.redirect(url);
+  }
+}
+```
+
+#### 헤더에 pathname을 담아 반환하기
+
+저는 경로에 있는 id 값을 서버 컴포넌트 단위인 page에서 사용하기 위해 middleware에서 헤더로 pathname을 전달해 주었습니다. 따라서 아래와 같이 코드를 작성 하였습니다.
+
+```ts
+
+// middleware.ts
+import { NextRequest, NextResponse } from 'next/server';
+
+export function middleware(request: NextRequest) {
+
+  // next에서 제공하는 헤더 라이브러리에 헤더를 set
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-pathname', request.nextUrl.pathname);
+
+  const url = request.nextUrl;
+
+  if (url.pathname === '/') {
+    url.pathname = '/recruit';
+    return NextResponse.redirect(url);
+  }
+
+  // pathname이 담긴 헤더를 반환
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
+}
+
+```
+
+서버 컴포넌트에서는 다음과 같이 헤더에 pathname을 불러와서 사용하면 됩니다.
+
+```tsx
+
+export default function Layout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const headersList = headers();
+  const headerPathname = headersList.get('x-pathname') || '';
+
+  console.log(headerPathname)
+}
+```
+
+
+#### 더 많은 사용 방법
+
+Nextjs 공식 문서 에서는 header 말고 cookie를 이용하는 방법, 더 다양한 방법들을 제공하고 있습니다 따라서 더 다양하고 안전한 사용 방법을 확인 하려면 항상 공식 문서를 확인 하세요
+
+[공식 문서 바로 가기](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+
+### 결론
+
+팀 프로젝트에서 미들웨어를 활용하면서 어쩌면 복잡하게 설정해야 했던 작업들을 쉽게 관리할 수 있었습니다. 앞으로 다양한 상황에서 다양한 기능을 구현할 때 미들웨어를 활용하여 더 나은 사용자 경험을 제공할 수 있을 것 같습니다.

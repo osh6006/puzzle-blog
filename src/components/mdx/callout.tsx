@@ -4,8 +4,9 @@ import { cn } from "@/lib/utils";
 import {
   CircleAlertIcon,
   CircleCheckIcon,
-  CircleXIcon,
   InfoIcon,
+  ShieldAlert,
+  TriangleAlert,
 } from "lucide-react";
 
 type CalloutType = "info" | "warn" | "danger" | "normal";
@@ -30,11 +31,11 @@ const metadata: IconType = {
     boxClass: "bg-green-100 dark:bg-green-700",
   },
   danger: {
-    icon: () => <CircleXIcon className="text-red-500 w-6 h-6" />,
+    icon: () => <ShieldAlert className="text-red-500 w-6 h-6" />,
     boxClass: "bg-red-100 dark:bg-red-700",
   },
   warn: {
-    icon: () => <CircleAlertIcon className="text-amber-500 w-6 h-6" />,
+    icon: () => <TriangleAlert className="text-amber-500 w-6 h-6" />,
     boxClass: "bg-amber-100 dark:bg-yellow-700",
   },
 
