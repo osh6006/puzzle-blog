@@ -1,0 +1,207 @@
+---
+title: React 16버전과 18버전에 대해서
+date: 2023-08-05
+lastmod: 2024-12-27
+author: ohs6006
+---
+
+리액트(React)는 매 업데이트마다 개발자들에게 더 유용한 기능과 도구를 제공합니다. 수 많은 버전이 있겠지만 그 중에서도 제일 중요하다고 생각하는 두 가지 버전이 있는데,
+
+**16버전**은 안정성과 성능 개선을 통해 개발자 경험을 크게 향상시켰고, **18버전**은 사용자 경험을 중심으로 한 혁신적인 기능을 도입했습니다. 이번 글에서는 각각 버전에서 중요한 업데이트 내용을 간단한 예제를 통해 설명해 보겠습니다.
+
+
+<Callout type="info" row={true}>
+  이 글은 **2024-12-27** 에 업데이트 되었습니다.
+</Callout>
+
+<Callout type="warn" row={true}>
+  이 글은 **React**에 대한 기본적인 지식을 알고 있어야 합니다.
+</Callout>
+
+## React 16
+
+### 16.8 React hooks
+
+기존의 React는 컴포넌트를 작성할 때 **클래스형 컴포넌트**를 주로 사용하였지만 16.8 버전 이후 **함수형 컴포넌트**를 사용할 수 있는 hooks를 업데이트 진행하였습니다. 기존의 클래스형 컴포넌트는 아래와 같이 상태관리를 클래스 안에 있는 생성자 및 변수들로 하는 반면,
+
+#### 클래스형 컴포넌트
+```tsx
+import React, { Component } from 'react';
+
+class Counter extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { count: 0 };
+  }
+
+  increment = () => {
+    this.setState((prevState) => ({ count: prevState.count + 1 }));
+  };
+
+  render() {
+    return (
+      <div>
+        <p>Count: {this.state.count}</p>
+        <button onClick={this.increment}>Increment</button>
+      </div>
+    );
+  }
+}
+
+export default Counter;
+```
+
+함수형 컴포넌트는 간단하게 `useState`및 `useEffetct`등과 같은 hooks를 사용하여 훨씬 간단한 컴포넌트를 구성할 수 있습니다. 또한 커스텀 hooks를 구현하여 반복적인 코드의 재사용성을 극대화 할 수 있었으며 기존의 HOC보다 더욱 가독성이 좋아졌습니다.
+
+#### 함수형 컴포넌트
+
+```tsx
+import React, { useState } from 'react';
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={() => setCount(count + 1)}>Increment</button>
+    </div>
+  );
+}
+
+export default Counter;
+```
+
+### Fiber 엔진
+![](https://res.cloudinary.com/dxesudkxn/image/upload/v1735337277/blog/%EB%A6%AC%EC%95%A1%ED%8A%B8%2016-18%EB%B2%84%EC%A0%84/opqlexbkunn2oierp4lr.png)
+
+리액트 16은 새로운 렌더링 엔진인 **Fiber**를 도입하며 개발자들에게 더 빠르고 유연한 렌더링 경험을 제공했습니다. Fiber는 작업 단위를 쪼개 비동기적으로 처리할 수 있도록 설계되어, UI 업데이트가 사용자의 작업을 방해하지 않도록 합니다. 예를 들어, 복잡한 렌더링 작업 중에도 사용자 인터랙션은 매끄럽게 유지됩니다. 이 구조는 특히 대규모 애플리케이션에서 성능 최적화를 가능하게 했습니다.
+
+### Portal
+
+![](https://res.cloudinary.com/dxesudkxn/image/upload/v1735337540/blog/%EB%A6%AC%EC%95%A1%ED%8A%B8%2016-18%EB%B2%84%EC%A0%84/kobcsymydwsasf2caaip.png)
+
+Portals는 리액트 16버전에서 추가된 또 다른 유용한 기능입니다. Portals를 사용하면 **자식 컴포넌트를 DOM 트리의 다른 위치에 렌더링**할 수 있습니다. 이는 모달, 팝업, 툴팁 등과 같은 UI 요소를 구현할 때 유용한 기능으로 Portals를 사용하면 부모 컴포넌트의 스타일이나 레이아웃에 영향을 받지 않고 독립적으로 렌더링할 수 있습니다.
+
+### Errorboundary
+리액트 16에서는 에러 경계라는 개념이 도입되어, 컴포넌트 내 오류를 보다 안전하게 처리할 수 있게 되었습니다. 에러 경계는 특정 컴포넌트에서 예기치 못한 에러가 발생했을 때, 애플리케이션 전체가 중단되는 것을 방지합니다. 이를 통해 개발자는 사용자 경험을 유지하며 오류를 로깅하고 문제를 해결할 수 있는 환경을 만들 수 있습니다.
+
+### Errorboundary 예제
+
+ErrorBoundary는 클래스형 컴포넌트로 작성되며 특정 하위 컴포넌트에서 발생하는 오류를 캡처하고 UI 전체가 중단되지 않도록 할 수 있습니다.
+
+```tsx
+import React, { Component } from 'react';
+
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, info) {
+    console.error("Error caught in boundary:", error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <h1>Something went wrong.</h1>;
+    }
+
+    return this.props.children;
+  }
+}
+
+export default ErrorBoundary;
+```
+
+---
+
+## React 18
+
+### Automatic Batching
+
+리액트 18에서는 **자동 배칭**이 추가되어, 상태 업데이트를 더 효율적으로 처리할 수 있게 되었습니다. 
+
+예를 들어, 아래와 같이 setState를 통해 상태를 업데이트하고 업데이트된 결과를 바탕으로 리렌더링을 진행하였습니다. 따라서 state가 변경되는 일이 많아지면 그만큼 리렌더링 횟수가 많아지게 되었지만, 18버전 이후 부터는 이러한 상태들을 하나로 통합해 처리 되었습니다.
+
+```tsx
+function handleClick() {
+  setState1((prev) => prev + 1);
+  setState2((prev) => prev + 1);
+}
+```
+### Transitions API와 StartTransition
+
+리액트 18에서 도입된 Transitions API는 UI 업데이트를 다음과 같이 두 가지 우선순위로 나누어 구분합니다.
+
+- **Urgent Updates(긴급 업데이트)**: 사용자 상호작용에 즉각적으로 반응해야 하는 업데이트.
+ex) 버튼 클릭, 텍스트 입력
+
+- **Non-Urgent Updates(비긴급 업데이트)**: 약간의 지연이 허용되는 업데이트.
+ex) 복잡한 필터링 작업, 애니메이션 처리
+
+이때 **StartTransition** 의 역할로 비긴급 업데이트를 React의 스케줄러에게 맡기도록 지정하여 해당 작업의 우선순위를 낮은 작업으로 처리하고, 중요한 UI 상호작용을 우선적으로 실행합니다.
+
+```tsx
+import React, { useState, useTransition } from 'react';
+
+function App() {
+  const [query, setQuery] = useState('');
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [isPending, startTransition] = useTransition();
+
+  const items = Array.from({ length: 10000 }, (_, i) => `Item ${i + 1}`);
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setQuery(value);
+
+    // 비긴급 작업으로 필터링 처리
+    startTransition(() => {
+      const filtered = items.filter((item) => item.includes(value));
+      setFilteredItems(filtered);
+    });
+  };
+
+  return (
+    <div>
+      <h1>Search Items</h1>
+      <input type="text" value={query} onChange={handleInputChange} placeholder="Type to search..." />
+      {isPending && <p>Loading...</p>} {/* 비긴급 작업 진행 중 표시 */}
+      <ul>
+        {filteredItems.map((item, index) => (
+          <li key={index}>{item}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+```
+
+위의 코드는 `isPending`과 `startTransition`을 활용하여, 아이템의 검색 시 필터링 작업의 우선순위를 낮은 작업으로 처리하고 작업 처리 시 진행 표시를 해 줍니다.
+
+## Suspense
+
+Suspense는 비동기 작업을 감지하여 대기 중인 작업이 완료될 때까지 로딩 UI를 보여주고, 작업이 완료되면 결과를 렌더링하는 기능입니다.
+
+```tsx
+<Suspense fallback={<div>로딩중...</div>}>
+	<AsyncComponents />
+</Suspense>
+```
+
+위의 코드처럼 자식 컴포넌트의 비동기 작업을 감지하여 비동기 작업 시 `fallback` UI를 보여주며, 작업이 완료되면 결과 UI를 보여줍니다.
+
+
+### 결론
+
+리액트 16과 18버전에 대해 알아보면서, React 팀이 React를 사용하는 개발자들에게 더 편리한 기능을 제공하며, 사용자 경험을 대폭 개선하기 위해 끊임없이 노력해왔음을 알 수 있었습니다.
+
+앞으로 나올, 리액트 19버전에는 어떤 새로운 기능이 추가될지 기대가 되고 추가된다면 빨리 포스팅 할 수 있었으면 좋겠습니다. 
