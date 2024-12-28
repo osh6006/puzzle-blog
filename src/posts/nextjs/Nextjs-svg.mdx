@@ -1,5 +1,5 @@
 ---
-title: Next.js에서 SVG를 사용하는 여러가지 방법에 대해서
+title: Next.js에서 SVG를 사용하는 다양한 방법들
 date: 2024-08-25
 lastmod: 2024-09-27
 author: ohs6006
@@ -151,3 +151,159 @@ color="#F8BE27"
 
 위와 같이 사용한 결과 더 쉽게 간단한 코드로 SVG파일을 다룰 수 있었기 때문에 매우 편리하게 사용할 수 있었습니다. 하지만 **라이브러리를 사용하지 않고 공통 컴포넌트를 만들 수 없을까?** 하는 의문이 들어 한 가지 방법을 더 찾게 되었습니다. 
 
+---
+
+## SVG SvgSymbols
+
+SVG Symbols는 SVG 스프라이트를 활용해 여러 개의 아이콘을 하나의 파일로 관리하고, 필요할 때 특정 아이콘만 참조하여 사용하는 방식입니다.
+아이콘을 `<symbol>` 태그로 정의하고, `<use>` 태그로 불러와 사용하는 구조로 작동합니다.
+
+### SvgSymbols 패턴 사용 방법
+
+- SVG 스프라이트 정의
+여러 아이콘을 하나의 파일에 모아 `<symbol>` 태그로 정의합니다.
+각 아이콘은 고유의 id를 가지며, `<use>` 태그로 호출할 수 있습니다.
+
+- 아이콘 참조
+`<use>` 태그의 xlinkHref 속성을 통해 원하는 아이콘의 id를 참조하여 렌더링합니다.
+
+- 스타일링 유연성
+아이콘 크기, 색상 등은 `<svg>` 태그에 width, height, fill 속성을 추가하여 커스터마이징이 가능합니다.
+
+#### SvgSymbols 컴포넌트 정의
+
+제가 작업하던 프로젝트에는 `SvgSymbols`라는 컴포넌트를 만들어, 모든 아이콘을 정의하였습니다. 아래의 코드처럼 commonSVG, bottomNavSVG 등을 모아 `<svg>` 내부에 정의하고, 루트레이아웃에 `display:none`으로 만들어 두어 처음에 한번만 렌더링 되도록 하였습니다.
+
+**루트 레이아웃에 SvgSymbols 컴포넌트 불러오기**
+```tsx
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  // ... 다른 코드들
+  <SvgSymbols />
+}
+```
+**SvgSymbols에 모든 Symbol컴포넌트 정의**
+```tsx
+import { bottomNavSVG } from '@/constants/icons/bottombar-icon';
+import { commonSVG } from '@/constants/icons/common-icon';
+
+
+const SvgSymbols = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="hidden">
+    {commonSVG}
+    {bottomNavSVG}
+    {/* 다른 아이콘들*/}
+  </svg>
+);
+
+export default SvgSymbols;
+```
+
+**Symbol컴포넌트 정의**
+```tsx
+export type CommonIconID =
+  | 'arrow-up-icon'
+  | 'prev-icon'
+
+export const commonSVG = (
+  <>
+    {/* arrow-up */}
+    <symbol
+      id="arrow-up-icon"
+      viewBox="0 0 24 25"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <g clipPath="url(#clip0_2801_22274)">
+        <path
+          d="M5.33398 14.7432L12.0007 8.0765L18.6673 14.7432"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </g>
+      <defs>
+        <clipPath id="clip0_2801_22274">
+          <rect
+            width="24"
+            height="24"
+            fill="white"
+            transform="translate(0 0.743164)"
+          />
+        </clipPath>
+      </defs>
+    </symbol>
+
+    {/* prev */}
+    <symbol
+      id="prev-icon"
+      viewBox="0 0 18 19"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <g clipPath="url(#clip0_2801_22189)">
+        <path
+          d="M11.5 4.74316L6.5 9.74316L11.5 14.7432"
+          stroke="currentColor"
+          strokeWidth="1.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </g>
+      <defs>
+        <clipPath id="clip0_2801_22189">
+          <rect
+            width="18"
+            height="18"
+            fill="white"
+            transform="translate(0 0.743164)"
+          />
+        </clipPath>
+      </defs>
+    </symbol>
+  </>
+);
+
+```
+
+#### 아이콘 공통 컴포넌트
+
+아이콘 공통 컴포넌트를 만들어 `use` 태그에 `id`로 해당 아이콘을 불러옵니다. 이때 props로 svg의 기본 props를 불러올 수 있기 떄문에 size, color, stroke등에 다양한 접근이 가능합니다.
+
+```tsx
+import IconIDTypes from '@/types/icon';
+import { SVGProps } from 'react';
+
+interface IIconProps extends SVGProps<SVGSVGElement> {
+  id: IconIDTypes;
+  size?: number | string;
+  className?: string;
+}
+
+const Icon: IIconProps = ({ id, size, className, ...rest }) => {
+  return (
+    <svg width={size} height={size} {...rest} className={className}>
+      <use href={`#${id}`} />
+    </svg>
+  );
+};
+
+export default Icon;
+
+
+// 원하는 곳에서 사용
+<Icon id={'back-icon'} size={32} className="text-white" />
+
+```
+---
+
+## 마치며
+
+
+SVGR을 사용하면 개별 SVG 파일을 빠르게 React 컴포넌트로 변환하여 적용할 수 있다는 점에서 편리합니다. 하지만, 모든 SVG가 독립적인 컴포넌트로 관리되기 때문에 공통 아이콘 컴포넌트라는 느낌은 덜합니다.
+
+반면, SVG Symbol은 아이콘을 추가할 때 약간 번거로운 점이 있지만, 모든 아이콘을 하나의 공통 스프라이트 컴포넌트로 관리할 수 있습니다. 이를 통해 특정 아이콘을 id 값만 참조하여 사용하기 때문에 코드의 가독성과 일관성이 더 뛰어나다는 생각이 들었습니다.
