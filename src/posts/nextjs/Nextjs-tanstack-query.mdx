@@ -1,0 +1,221 @@
+---
+title: Tanstack Query의 Key관리 및 Options 관리하기
+date: 2024-11-21
+lastmod: 2024-12-29
+author: ohs6006
+thumbnail : https://tanstack.com/_build/assets/logo-color-100w-br5_Ikqp.png
+---
+
+**TanStack Query**는 데이터 가져오기, 캐싱, 동기화, 업데이트를 효율적으로 처리할 수 있는 라이브러리로, React, Vue등 다양한 프론트엔드 개발환경에서 사용이 가능합니다. 특히 오늘 다룰 `Query Key`와 `Query Options`는 데이터 캐싱과 업데이트의 핵심으로, 이들을 체계적으로 관리하면 유지보수성과 생산성을 크게 향상시킬 수 있습니다. 이번 글에서는 Query Key와 Query Options의 개념, 관리 방법, 그리고 실용적인 팁을 소개해 보겠습니다.
+
+<Callout type="info" row={true}>
+  이 글은 **2024-12-30** 에 업데이트 되었습니다.
+</Callout>
+
+<Callout type="warn" row={true}>
+  이 글은 **React, Next.js**에 대한 기본적인 지식을 알고 있어야 합니다.
+</Callout>
+
+
+## Query Key
+
+Query Key는 TanStack Query에서 각 데이터 요청(쿼리)을 고유하게 식별하기 위해 사용하는 값입니다. Query Key는 동일한 데이터를 공유하며, 캐시에 이미 존재하는 데이터를 다시 가져오지 않으며, 특정 Query Key를 기준으로 데이터를 무효화하거나 새로고침(refetch)할 수 있습니다. 처음에 설정하는 `QueryProvider` 내에서 여러 컴포넌트에 동일한 Query Key를 사용하면 해당 데이터는 전역적으로 동기화됩니다.
+
+### 고려해야 할 사항
+
+Query Key는 데이터 요청의 의도를 명확히 표현하고 고유해야 합니다.
+
+```tsx
+useQuery(["data"], ...); // bed 데이터의 의도가 불분명함
+useQuery(["user"], ...); // good 명확하게 사용자의 데이터를 나타냄
+```
+
+또한 복잡한 데이터 구조를 다룰 때는 Query Key를 배열 형태로 설계하여 세부적으로 구분합니다.
+
+```tsx
+useQuery(["posts", postId, "detail"], ...); // 특정 게시글의 상세 데이터
+useQuery(["posts", postId, "comments"], ...); // 특정 게시글의 댓글 데이터
+```
+
+필터, 페이지네이션 등 동적인 데이터를 다룰 경우, 필요한 값을 Query Key에 포함시킵니다.
+```tsx
+useQuery(["users", { page: currentPage, filter: searchTerm }], ...);
+```
+
+QueryKey 전역변수를 선언하고 전역에서 관리하면 편하게 쿼리키를 관리할 수 있습니다.
+
+```tsx
+const QUERY_KEYS = {
+  USER_DETAILS: (id) => ["user", id], // 특정 사용자 데이터
+  POSTS: (userId) => ["posts",  userId ], // 특정 사용자의 게시글
+};
+```
+
+## Query Options
+
+Query Options는 TanStack Query에서 데이터 요청 및 캐싱 동작을 제어하는 설정 값입니다. `useQuery`, `useMutation`, `useInfiniteQuery`와 같은 훅을 사용할 때 옵션으로 전달되며, 데이터를 가져오는 방식, 캐싱 시간, 새로고침 조건 등을 세부적으로 설정할 수 있습니다.
+
+
+### 간단한 예제
+
+아래의 코드처럼 Query Options를 활용하면 데이터 요청과 캐싱 동작을 세밀히 제어하고, 애플리케이션의 성능과 사용자 경험을 최적화할 수 있습니다.
+
+```tsx
+const { data, isLoading, error } = useQuery(
+  {
+    queryKey :  ['user', userId], 
+    queryFn : () => fetchData();
+    staleTime: 5 * 60 * 1000,           // 5분 동안 데이터가 유효
+    enabled: !!userId,                  // userId가 있을 때만 실행
+    refetchOnWindowFocus: false,        // 윈도우 포커스 시 새로고침 비활성화
+    onSuccess: (data) => console.log(data),  // 성공 시 처리
+    onError: (err) => console.error(err),    // 실패 시 처리
+    ...// 더 많은 옵션들
+  }
+);
+```
+
+## 협업시 QueryKey 관리 방법
+
+우리 팀 프로젝트에서는 **Next.js**를 사용하고 있었기 때문에 **SSR**에 필요한 queryOption과 **CSR**에 필요한 useQuery 함수들을 따로 관리해야 했습니다. 따라서 팀원들과 협의하여 `service` 폴더를 만들고 각 엔드포인트 별 폴더를 만든 뒤  `query-options.ts`, `service.ts`, `use-service.ts` 폴더를 만들었습니다. 각각의 역할은 다음과 같습니다.
+
+- `service.ts` : 옵션에서 사용할 비동기 함수들 ex) fetchUserInfo()
+- `use-service.ts` : 클라이언트 컴포넌트에서 사용할 Query ex) useUserInfoQuery()
+- `query-options.ts` : 서버 컴포넌트(prefetch) 및 클라이언트 컴포넌트(useQuery)에서 사용할 옵션들
+
+```text
+src/
+├── #...나머지 폴더들
+├── service/
+│   ├── user/
+│   │   ├── service.ts
+│   │   ├── use-service.ts
+│   │   ├── query-options.ts
+```
+
+### 실제 프로젝트 예제
+
+실제 프로젝트에서는 각 파일에 어떤 코드가 들어가고 어떻게 사용했는지 간단한 에제를 들어보겠습니다.
+
+#### service.ts
+
+`service.ts`는 mutationOption이나 queryOption의 **queryFn**에서 사용할 함수입니다. 주로 백엔드와 데이터를 상호작용할 수 있는 함수들이 들어가게 됩니다. 
+
+```ts
+// service.ts
+export const getMyInfo = async () => {
+  const { data } = await api.get('/user/account/myInfo');
+  return data;
+};
+```
+
+#### query-options
+
+`query-options.ts`는 useQuery나 prefetchQuery에서 사용할 옵션들이 들어가게 됩니다. 위에서 정의했던 **QueryKey**가 여기 파일에 들어가게 되고 tanstack query에서 queryOptions를 불러와 사용합니다.
+
+```ts
+// query-options.ts
+export const userQueryKey = {
+  all: ['user'],
+  info: (id:string)=> [...userQueryKey.all, id],
+  lists: ()=>[...userQueryKey.all, 'list'],
+  followList: ({ limit }: { limit?: number }) =>
+    [...userQueryKey.lists(), 'follow', limit].filter(
+      (v) => v !== undefined
+    ), // 필터가 존재하면 배열에 넣어줌
+};
+
+
+// 사용할 Query Option
+
+// 일반 Query
+export const userInfoQueryOption = (id:string) => {
+  return queryOptions({
+    queryKey: userQueryKey.info(id),
+    queryFn: () => getMyInfo(id),
+  });
+};
+
+// Infinity Query
+export const followListQueryOption = (
+  params: {limit?:number}
+) => {
+  return infiniteQueryOptions({
+    queryKey: qnaQueryKey.followList.(params),
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
+      getQnaAnswerList({ page: pageParam, limit: params.limit }),
+    getNextPageParam: (lastPage) =>
+    // 백엔드에서 주는 데이터에 따라 달라짐
+      lastPage.list.length === params.limit ? lastPage.page + 1 : undefined,
+  });
+};
+```
+
+#### use-query.ts
+
+use-query.ts 파일에서는 실제로 사용할 useQuery 함수들을 작성합니다.
+
+
+```ts
+// use-query
+export const useUserInfoQuery = (id: string) => {
+  return useQuery(userInfoQueryOption(id));
+};
+
+export const useQnaModifyQuery = (params: { limit?:number }) => {
+  return useQuery(followListQueryOption(params));
+};
+```
+
+#### 서버 컴포넌트에서 사용하기
+
+서버 컴포넌트에서는 Tanstack Query의 Hydratate Boundary를 사용하여 서버에서 미리 데이터를 받아와 사용합니다. 
+
+```tsx
+
+import {
+  HydrationBoundary,
+  QueryClient,
+  dehydrate,
+} from '@tanstack/react-query';
+
+async function AuthorApprovalPage() {
+  const queryClient = new QueryClient();
+  await queryClient.prefetchQuery(
+    userInfoQueryOption("ID")
+  );
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+        {/*자식 컴포넌트 */}
+    </HydrationBoundary>
+  );
+}
+
+export default AuthorApprovalPage;
+```
+
+#### 클라이언트 컴포넌트에서 사용하기
+
+클라이언트 컴포넌트에서는 React에서 사용하던 것처럼 `use-service.ts`파일에 정의했던 useQuery들을 불러와서 사용하면 됩니다.
+
+```tsx
+'use client'
+
+function MyInfoComponents() {
+  const { data } = useUserInfoQuery("ID"); 
+
+  return (
+    <div>
+        {data}
+    </div>
+  );
+}
+
+export default MyInfoComponents;
+```
+
+## 마치며
+
+체계적으로 관리된 Query Key와 Query Options는 팀원 간의 의사소통을 명확하게 해주었고, 데이터 요청 로직의 가독성을 높이는 데 중요한 역할을 했습니다. 함께 프로젝트를 진행하며 소중한 가르침을 주신 팀원들께 진심으로 감사드립니다.
