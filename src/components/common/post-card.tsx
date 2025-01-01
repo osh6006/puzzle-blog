@@ -29,7 +29,7 @@ const PostCard: React.FunctionComponent<IPostCardProps> = ({
      dark:bg-background  dark:hover:shadow dark:hover:shadow-primary dark:transition
     "
     >
-      <CardHeader className="relative min-h-[200px] overflow-hidden ">
+      <CardHeader className="relative min-h-[200px] overflow-hidden p-2 bg-slate-50">
         {imageUrl ? (
           <div
             style={{
@@ -39,12 +39,12 @@ const PostCard: React.FunctionComponent<IPostCardProps> = ({
               backgroundPosition: "center",
             }}
             className={cn(
-              "group-hover:scale-105 transition-all w-full h-[200px] bg-cover"
+              "group-hover:scale-105 transition-all w-full h-[190px] "
             )}
           />
         ) : (
           <div
-            className="w-full flex items-center group-hover:bg-primary-foreground transition duration-200 justify-center flex-col inset-0 absolute bg-gray-200 
+            className="w-full flex items-center group-hover:bg-primary-foreground transition duration-200 justify-center flex-col inset-0 absolute bg-slate-100
           "
           >
             <ApertureIcon size={100} />
