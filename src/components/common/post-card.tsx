@@ -8,6 +8,7 @@ import {
 } from "../ui/card";
 import Image from "next/image";
 import ApertureIcon from "@/components/icon/aperture-icon";
+import { cn } from "@/lib/utils";
 
 interface IPostCardProps {
   title: string;
@@ -28,16 +29,18 @@ const PostCard: React.FunctionComponent<IPostCardProps> = ({
      dark:bg-background  dark:hover:shadow dark:hover:shadow-primary dark:transition
     "
     >
-      <CardHeader className="relative min-h-[200px] overflow-hidden">
+      <CardHeader className="relative min-h-[200px] overflow-hidden ">
         {imageUrl ? (
-          <Image
-            src={imageUrl}
-            alt="postThumbnail"
-            fill
+          <div
             style={{
-              objectFit: "contain",
+              backgroundImage: `url('${imageUrl}')`,
+              backgroundSize: "contain",
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "center",
             }}
-            className="group-hover:scale-105 transition-all"
+            className={cn(
+              "group-hover:scale-105 transition-all w-full h-[200px] bg-cover"
+            )}
           />
         ) : (
           <div
