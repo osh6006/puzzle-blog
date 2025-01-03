@@ -127,14 +127,372 @@ TipTap에서 커스터마이징을 하는 방법은 **EditorContents**와 **Tool
 
 ### EditorContent
 
-에디터 콘텐츠의 HTML 값들은 CSS를 사용할 수 있습니다. 
+에디터 콘텐츠의 HTML들은 `.tiptap` 클래스가 있는 컨테이너 안에 렌더링됩니다 따라서 아래처럼 스타일링이 가능합니다.
+
+#### CSS 사용
 
 ```css
-
+.tiptap p {
+  margin: 1em 0;
+}
 ```
+
+#### 커스텀 클래스 사용
+또는 에디터 옵션에서 각 커스텀 클래스에 대한 값을 추가할 수 있습니다.
+
+```css
+.my-custom-paragraph{
+  margin: 1em 0;
+  color: red;
+}
+
+.my-custom-heading{
+  margin: 1em 0;
+  color: blue;
+}
+```
+
+```tsx
+// useEditor or new Editor
+Editor({
+  extensions: [
+    Document,
+    Paragraph.configure({
+      HTMLAttributes: {
+        class: 'my-custom-paragraph',
+      },
+    }),
+    Heading.configure({
+      HTMLAttributes: {
+        class: 'my-custom-heading',
+      },
+    }),
+    Text,
+  ],
+})
+```
+
+#### Tailwindcss 사용
+
+
+Tailwindcss를 사용할 떄에는 editor 자체에 class를 전달하여 사용합니다.
+
+```tsx
+// useEditor or new Editor
+Editor({
+  editorProps: {
+    attributes: {
+      class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none',
+    },
+  },
+})
+```
+
 
 ### Toolbar
 
-```tsx
+Toolbar를 커스터마이징 하는데는 다양한 방식이 있겠지만 저는 프로젝트에서 shadcn-ui를 사용하고 있었기 때문에 shadcn-ui의 dropdown 컴포넌트를 이용하여 toolbar를 커스터마이징 하였습니다.
 
+아래의 코드는 드롭다운 기능을 가진 간단한 toolbar입니다. 지금은 dropdown이 Heading에만 되어잇지만 fontSize, color등 다양한 버튼을 커스터마이징 할 수 있습니다.
+
+```tsx
+import React from 'react';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@radix-ui/react-dropdown-menu';
+import { Editor } from '@tiptap/react';
+import { clsx } from 'clsx';
+
+interface ToolbarProps {
+  editor: Editor | null;
+}
+
+const DropdownToolbar = ({ editor }:ToolbarProps) => {
+  if (!editor) return null;
+
+  return (
+    <div className="flex items-center space-x-4">
+      {/* Bold Button */}
+      <button
+        className={clsx(
+          'px-3 py-1 border rounded-md bg-white hover:bg-gray-100',
+          editor.isActive('bold') && 'bg-gray-200 font-bold'
+        )}
+        onClick={() => editor.chain().focus().toggleBold().run()}
+      >
+        Bold
+      </button>
+
+      {/* Italic Button */}
+      <button
+        className={clsx(
+          'px-3 py-1 border rounded-md bg-white hover:bg-gray-100',
+          editor.isActive('italic') && 'bg-gray-200 font-bold'
+        )}
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+      >
+        Italic
+      </button>
+
+      {/* Underline Button */}
+      <button
+        className={clsx(
+          'px-3 py-1 border rounded-md bg-white hover:bg-gray-100',
+          editor.isActive('underline') && 'bg-gray-200 font-bold'
+        )}
+        onClick={() => editor.chain().focus().toggleUnderline().run()}
+      >
+        Underline
+      </button>
+
+      {/* Heading Dropdown */}
+      <DropdownMenu>
+        <DropdownMenuTrigger className="px-3 py-1 border rounded-md bg-white hover:bg-gray-100">
+          Heading
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="rounded-md border bg-white shadow-md">
+          <DropdownMenuItem
+            className={clsx('px-4 py-2', editor.isActive('heading', { level: 1 }) && 'bg-gray-200')}
+            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+          >
+            Heading 1
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className={clsx('px-4 py-2', editor.isActive('heading', { level: 2 }) && 'bg-gray-200')}
+            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          >
+            Heading 2
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className={clsx('px-4 py-2', editor.isActive('heading', { level: 3 }) && 'bg-gray-200')}
+            onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+          >
+            Heading 3
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+};
+
+export default DropdownToolbar;
 ```
+
+### Extension 
+
+![프로젝트 Horizontal](https://res.cloudinary.com/dxesudkxn/image/upload/v1735850097/blog/Nextjs%20Tiptap/wy98dcukgyxt01bf9sc7.png)
+
+커스터마이징 중에 가장 복잡하고 어려운 부분이지만 Tiptap에서는 Extension을 커스터마이징 할 수 있습니다. 저희 프로젝트에서는 에디터에서 다양한 **horizontal rule** 필요했는데 TipTap에서는 기본형만 제공하고 점선형과 도트형은 제공하지 않아서 제가 따로 커스터마이징이 필요했습니다.
+
+지금 예제 코드에서는 위의 사진에서 **도트형 horizontal rule** 의 예제를 사용하겠습니다. 
+
+#### CSS 스타일링하기 
+
+우선 가장 처음에 할 일은 **도트형 horizontal rule** 스타일링을 설정해 줍니다. 
+
+
+```css
+.custom-div-with-circles {
+  display: flex;
+  width: 100%;
+  column-gap: 30px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 13px;
+  margin-bottom: 13px;
+}
+
+.circle {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #717680;
+}
+```
+
+#### TipTap Commands의 인터페이스 확장하기
+
+우리가 만들려고 하는 Rule 처음부터 새로 만들어지기 때문에 지금 설정한 도트형 horizontal rule을 바로 사용하려면 Type에러가 발생하게 됩니다. 따라서 TipTap Commands의 인터페이스를 확장해서 타입 오류를 없애야 합니다.
+
+```tsx
+declare module '@tiptap/core' {
+  interface Commands<ReturnType> {
+    customDivWithCircles: {
+      /**
+       * 다양한 스타일을 가진 Horizontal Rule을 삽입합니다.
+       */
+      insertCustomDivWithCircles: () => ReturnType;
+    };
+  }
+}
+```
+
+#### 노드 만들기
+
+다음으로 새로만들 노드를 설정하고 옵션들을 추가해 줍니다. 기본적인 옵션은 주석으로 처리하였고 중요한 내용만을 설명하겠습니다.
+
+
+    **parseHTML**
+    parseHTML 메서드는 HTML에서 특정 태그(예: `<div class="custom-div-with-circles">`)를 인식하고, 이를 에디터의 **문서 모델Document Model**에 매핑합니다.
+
+    **renderHTML()**
+    renderHTML 메서드는 문서 모델의 노드를 HTML로 렌더링합니다. 아래의 코드에서는 `div`와 내부에 `circle` 클래스를 가진 3개의 자식 요소를 렌더링합니다.
+
+    **addCommands()**
+    addCommands 메서드는 커스텀 명령어를 정의합니다. insertCustomDivWithCircles라는 명령어를 추가해, 에디터에 새로운 커스텀 요소를 삽입할 수 있도록 할 수 있습니다.
+
+    **addInputRules()**
+    addInputRules 메서드는 특정 입력 패턴(예: ---, ___,또는 다른 마크다운 언어도 사용가능)을 감지하여 자동으로 노드를 삽입합니다.
+
+
+```tsx
+export const CustomDotsHorizontalRule = Node.create({
+  name: 'customDivWithCircles', // 노드 이름
+  group: 'block', // 블록 그룹에 속함
+  content: 'inline*', // 인라인 콘텐츠 허용
+
+  // HTML에서 커스텀 요소를 인식
+  parseHTML() {
+    return [
+      {
+        tag: 'div.custom-div-with-circles',
+      },
+    ];
+  },
+
+  // 노드가 렌더링되는 HTML 구조
+  renderHTML({ HTMLAttributes }) {
+    return [
+      'div',
+      mergeAttributes(HTMLAttributes, { class: 'custom-div-with-circles' }),
+      ['div', { class: 'circle' }],
+      ['div', { class: 'circle' }],
+      ['div', { class: 'circle' }],
+    ];
+  },
+
+  // 명령어 추가
+  addCommands() {
+    return {
+      insertCustomDivWithCircles:
+        () =>
+        ({ chain }) => {
+          return chain()
+            .insertContent({
+              type: this.name,
+              content: [],
+            })
+            .run();
+        },
+    };
+  },
+
+  // 입력 패턴으로 노드 생성
+  addInputRules() {
+    return [
+      nodeInputRule({
+        find: /^(?:---|—-|___\s|\*\*\*\s)$/, // `---`, `___` 등으로 요소 생성
+        type: this.type,
+      }),
+    ];
+  },
+});
+```
+#### 전체 코드
+
+
+```tsx
+import { Node, mergeAttributes, nodeInputRule } from '@tiptap/core';
+
+// TipTap의 Commands 인터페이스 확장
+declare module '@tiptap/core' {
+  interface Commands<ReturnType> {
+    customDivWithCircles: {
+      /**
+       * 다양한 스타일을 가진 Horizontal Rule을 삽입합니다.
+       */
+      insertCustomDivWithCircles: () => ReturnType;
+    };
+  }
+}
+
+export const CustomDotsHorizontalRule = Node.create({
+  name: 'customDivWithCircles',
+
+  group: 'block',
+
+  content: 'inline*',
+
+  parseHTML() {
+    return [
+      {
+        tag: 'div.custom-div-with-circles',
+      },
+    ];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return [
+      'div',
+      mergeAttributes(HTMLAttributes, { class: 'custom-div-with-circles' }),
+      ['div', { class: 'circle' }],
+      ['div', { class: 'circle' }],
+      ['div', { class: 'circle' }],
+    ];
+  },
+
+  addCommands() {
+    return {
+      insertCustomDivWithCircles:
+        () =>
+        ({ chain }) => {
+          return chain()
+            .insertContent({
+              type: this.name,
+              content: [],
+            })
+            .run();
+        },
+    };
+  },
+
+  addInputRules() {
+    return [
+      nodeInputRule({
+        find: /^(?:---|—-|___\s|\*\*\*\s)$/,
+        type: this.type,
+      }),
+    ];
+  },
+});
+```
+
+#### Editor의 Extension에 추가 
+
+이제 만들어진 extension을 에디터에 추가하면 커스텀 extension을 자유롭게 사용 가능합니다.
+
+```tsx
+const App = () => {
+  const editor = useEditor({
+    extensions: [StarterKit, CustomDotsHorizontalRule],
+    content: '<p>Here is a custom horizontal rule:</p>',
+  });
+
+  return (
+    <div>
+      <EditorContent editor={editor} />
+      <button
+        onClick={() =>
+          editor.chain().focus().insertCustomDivWithCircles().run()
+        }
+      >
+        Add Custom Horizontal Rule
+      </button>
+    </div>
+  );
+};
+```
+
+## 마치며
+
+TipTap을 활용한 이번 프로젝트는 마치 **블록을 조립하는 레고**처럼, **에디터를 원하는 형태로 확장하고 맞춰**가는 흥미로운 작업이었습니다. 기본 제공 기능만으로도 충분히 강력했지만, 커스터마이징을 통해 **도트형 Horizontal Rule** 같은 고유한 요소를 구현하며 프로젝트의 요구사항을 충족할 수 있었습니다.
+
+앞으로 진행할 다른 프로젝트에서도 에디터를 구현할 기회가 있다면 TipTap 에디터를 적극 활용해 볼 생각입니다!
