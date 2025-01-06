@@ -36,7 +36,7 @@ const BlogHeader: React.FunctionComponent<IBlogHeaderProps> = ({
         </span>
       </div>
       {thumbnail ? (
-        <div className="relative rounded-md w-full my-4 min-h-[400px] overflow-hidden">
+        <div className="relative rounded-md w-full my-4 min-h-[400px] overflow-hidden bg-slate-50 p-1">
           <Image
             alt="thumbnail"
             src={thumbnail}
