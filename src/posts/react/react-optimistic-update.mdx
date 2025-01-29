@@ -6,26 +6,18 @@ author: ohs6006
 thumbnail : https://tenor.com/ko/view/like-press-button-click-gif-16693900.gif
 ---
 
-**Optimistic Update**(낙관적 업데이트)는 사용자 경험을 향상시키는 중요한 기법으로, UI가 서버의 응답을 기다리지 않고 **즉시 변경된 상태를 반영**할 수 있는 방법입니다. TanStack Query는 이를 다양한 상황에서 간단히 구현할 수 있는 함수를 제공하기 때문에 이번 글에서는 일반 데이터와 무한 스크롤 데이터 각각에서 Optimistic Update를 구현하는 방법을 살펴보겠습니다.
+**Optimistic Update(낙관적 업데이트)**는 사용자 경험을 크게 향상시키는 기법으로, **UI가 서버 응답을 기다리지 않고 즉시 변경된 상태를 반영**하도록 만듭니다. TanStack Query는 이를 다양한 상황에서 간단히 구현할 수 있는 강력한 함수들을 제공합니다. 이번 글에서는 일반 데이터와 무한 스크롤 데이터 각각에서 **Optimistic Update**를 구현하는 방법을 살펴보겠습니다.
 
-
-<Callout type="info" row={true}>
-  이 글은 **2024-12-31** 에 업데이트 되었습니다.
-</Callout>
-
-<Callout type="warn" row={true}>
-  이 글은 **React, Tanstack Query**에 대한 기본적인 지식을 알고 있어야 합니다.
-</Callout>
+<Callout type="info" row={true}> 이 글은 **2024-12-31** 에 업데이트 되었습니다. </Callout> 
+<Callout type="warn" row={true}> 이 글은 **React, Tanstack Query**에 대한 기본적인 지식을 알고 있어야 합니다. </Callout>
 
 
 ## Optimistic Update
-Optimistic Update는 사용자가 수행한 작업(예: 추가, 삭제, 수정)이 성공적으로 처리될 것이라고 가정하고, 서버의 응답 전 UI를 즉시 갱신하는 기술입니다. 이를 통해 사용자 경험(UX)을 크게 향상시킬 수 있습니다.
-
-Optimistic Update는 서버 요청이 성공할 것을 **"낙관적으로"** 가정하기 때문에 이름이 붙여졌으며, 특히 서버 응답 시간이 길거나 네트워크 상태가 불안정한 상황에서도 부드럽고 직관적인 인터페이스를 제공합니다.
+Optimistic Update는 사용자가 수행한 **작업(예: 추가, 삭제, 수정)이 성공적으로 처리될 것이라고 가정**하고, 서버의 응답 전 **UI를 즉시 갱신**하는 기술입니다. 이를 통해 네트워크 지연이나 서버 처리 시간이 길어도 부드럽고 직관적인 사용자 경험(UX)을 제공할 수 있습니다.
 
 ### Optimistic Update의 주요 흐름
 
-Optimistic Update는 아래와 같은 흐름으로 처리되며 Tanstack Query에서는 아래의 흐름을 따르는 함수를 제공합니다.
+Optimistic Update는 아래와 같은 순서로 동작하며, TanStack Query는 이를 쉽게 구현할 수 있는 함수들을 제공합니다.
 
 1. 사용자가 작업을 요청합니다.
 2. UI가 변경된 상태를 즉시 반영합니다.
@@ -161,4 +153,6 @@ const { mutate } = useMutation({
 ```
 ## 마치며
 
-일반 데이터와 무한 스크롤 데이터에서 낙관적 업데이트를 구현하면서, 두 방식이 비슷하면서도 각기 다른 접근이 필요하다는 것을 알게 되었습니다. 특히, TanStack Query V5에서 제공하는 onMutate, onError, setQueryData 함수는 이전 버전보다 더욱 직관적이고 간편하게 설계되어, 개발자 입장에서 훨씬 효율적으로 사용할 수 있었습니다. 이러한 개선 덕분에 복잡한 작업도 쉽게 처리할 수 있었고, 개발 경험이 한층 편리해졌다는 점이 인상적이었습니다.
+일반 데이터와 무한 스크롤 데이터에서 낙관적 업데이트를 구현하면서, 두 방식이 비슷하면서도 각기 다른 접근이 필요하다는 것을 알게 되었습니다. 특히, TanStack Query V5에서 제공하는 `onMutate`, `onError`, `setQueryData` 함수는 이전 버전보다 더욱 직관적이고 간편하게 설계되어, 개발자 입장에서 훨씬 효율적으로 사용할 수 있었습니다. 
+
+이러한 개선 덕분에 복잡한 작업도 쉽게 처리할 수 있었고, 개발 경험이 한층 편리해졌다는 점이 인상적이었습니다.
