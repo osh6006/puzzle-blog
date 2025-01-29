@@ -5,15 +5,15 @@ lastmod: 2024-12-29
 author: ohs6006
 ---
 
-React Hook Form은 간결한 API와 뛰어난 성능 덕분에 React 환경에서 널리 사용되는 폼 라이브러리입니다. 그러나 폼 상태를 여러 컴포넌트에서 공유해야 할 때, 기존의 방식대로 react hook form을 사용한다면, 복잡해지고 유지보수가 어려워질 수 있습니다.
+**React Hook Form**은 간결한 API와 뛰어난 성능 덕분에 React 환경에서 널리 사용되는 폼 라이브러리입니다. 그러나 **폼 상태를 여러 컴포넌트에서 공유**해야 할 때, 기존의 방식대로 사용한다면, **복잡해지고 유지보수가 어려**워질 수 있습니다.
 
-이 문제를 해결하기 위해 React Hook Form은 useFormContext를 제공합니다. 이를 활용하면 폼 상태와 관련 메서드를 Context API로 관리하여, 컴포넌트 간 상태 공유를 간단하고 효율적으로 처리할 수 있습니다. 이번 글에서는 useFormContext를 활용해 기존 코드를 개선하고, 효율적인 폼 상태 관리 방법을 살펴보겠습니다.
+이 문제를 해결하기 위해 React Hook Form은 **useFormContext**를 제공합니다. 이를 활용하면 폼 상태와 관련 메서드를 Context API로 관리하여, 컴포넌트 간 상태 공유를 간단하고 효율적으로 처리할 수 있습니다. 이번 글에서는 useFormContext를 활용해 기존 코드를 개선하고, 효율적인 폼 상태 관리 방법을 살펴보겠습니다.
 
 <Callout type="info" row={true}> 이 글은 **2024-01-01** 에 업데이트 되었습니다. </Callout> 
 <Callout type="warn" row={true}> 이 글은 **React, React Hook Form**에 대한 기본적인 지식을 알고 있어야 합니다. </Callout>
 
 ## 기존 React Hook Form 구조의 문제점
-기존 방식에서는 useForm 훅으로 폼 상태를 관리하며, 상태를 자식 컴포넌트로 전달할 때 props drilling이 발생하는 경우가 많았습니다. 다음은 기본적인 React Hook Form 코드 예제입니다.
+기존 방식에서는 `useForm` 훅으로 폼 상태를 관리하며, 상태를 자식 컴포넌트로 전달할 때 **Props Drilling**이 발생하는 경우가 많았습니다. 다음은 기본적인 React Hook Form 코드 예제입니다.
 
 ```tsx
 import React from 'react';
