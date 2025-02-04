@@ -35,13 +35,13 @@ export default async function BlogDetailPage({
 
   return (
     <>
-      <div className="w-full prose prose-sm sm:prose-base lg:prose-lg xl:prose-xl prose-img:mt-0 mx-auto">
+      <div className="w-full relative prose prose-sm sm:prose-base lg:prose-lg prose-img:mt-0 mx-auto">
         <BlogHeader {...blogHeader} />
       </div>
-      <div className="mb-[100px] prose relative prose-sm sm:prose-base prose-img:rounded-lg prose-img:bg-cover lg:prose-lg xl:prose-lg 2xl:prose-lg dark:prose-invert mx-auto">
+      <div className="mb-[100px] w-full prose relative prose-sm sm:prose-base prose-img:rounded-lg prose-img:bg-cover lg:prose-lg xl:prose-lg 2xl:prose-lg dark:prose-invert mx-auto">
         <BlogBody blogDetail={blogDetail} />
-        <BlogSideBar blogIndex={blogIndex} />
         <hr />
+        <BlogSideBar blogIndex={blogIndex} />
       </div>
       <Giscus />
     </>

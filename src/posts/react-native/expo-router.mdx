@@ -1,0 +1,378 @@
+---
+title: Expo-router로 라우팅하기
+date: 2025-02-02 17:20 +0900
+lastmod: 2025-02-02 15:31:23 +0900
+author: ohs6006
+thumbnail: "https://cdn.sanity.io/images/siias52v/production/c42a34e7f29b173d9dd01de20ae630949aa94db3-2400x1350.png?auto=format&fit=max&q=75&w=2400"
+---
+
+**모든 애플리케이션(모바일 또는 웹)을** 설계할 때 네비게이션 구조는 필수적인 요소입니다. 특히, 모바일 환경에서는 사용자 경험(UX)에 직결되므로, 간결하고 직관적인 네비게이션 시스템을 구축하는 것이 중요합니다.
+
+**기존의 React Native 네비게이션 구현 방식**은 `react-navigation`과 같은 라이브러리를 활용해 **컴포넌트 기반 라우팅**을 설정하는 방식이었습니다. 하지만, 최근에는 **Next.js와 유사한 파일 기반 라우팅을 제공하는** `expo-router`가 등장하면서, 더욱 직관적이고 효율적인 네비게이션 방식이 가능해졌습니다.
+
+이번 글에서는 Expo Router를 활용해 네비게이션을 구현하는 방법과, 실제 프로젝트에서 이를 어떻게 적용했는지를 핵심적인 내용만 정리하여 소개해보겠습니다.  
+
+
+<Callout type="info" row={true}>
+  이 글은 **2025-02-02** 에 업데이트 되었습니다.
+</Callout>
+
+<Callout type="warn" row={true}>
+  이 글은 **React**, **JavaScript**에 대한 기본적인 지식을 알고 있어야 합니다.
+</Callout>
+
+
+## Expo Router
+React 기반 애플리케이션에서는 네비게이션을 구현하기 위한 다양한 라이브러리가 제공됩니다. 예를 들어, 웹 애플리케이션에서는 react-router를 사용하며, Next.js에서는 내장된 App Router 또는 Page Router를 활용할 수 있습니다.
+
+React Native에서도 여러 네비게이션 라이브러리가 있지만, **Expo Router는** Next.js의 **파일 기반 라우팅 시스템을 React Native 환경에서도 그대로 사용**할 수 있도록 설계되었으며, React Navigation보다 더 간결하고 직관적인 코드 구조를 제공합니다. 또한 `expo-router`는 expo로 만든 프로젝트 뿐만 아니라 react cli로 만든 프로젝트에서도 사용이 가능하기 때문에 다양한 환경에서 적용이 가능합니다.
+
+
+## 기본적인 사용법
+
+### 환경설정
+Expo Router를 사용하려면 [공식 문서](https://docs.expo.dev/router/introduction/)를 확인하고, 자신의 프로젝트에 맞는 환경에 맞게 적용해야 합니다. 사용자 환경 설정은 매번 버전이 바뀔 때마다 바뀔 수 있으므로(특히 리액트 네이티브는 많음), 꼭 공식 문서를 확인하신 후 설정하시길 바랍니다. 저는 `expo-project`로 프로젝트를 시작하였기 때문에, 이후의 설명은 expo에서 제공하는 프로젝트를 기준으로 설명을 해 보겠습니다.
+
+
+### 기본 라우팅
+
+Expo Router는 Next.js처럼 파일 시스템을 기반으로 자동으로 라우트를 생성합니다. 아래의 코드처럼 `app`이라는 폴더 아래 파일이름으로 라우팅을 할 수 있습니다.
+
+```powershell
+/app
+ ├── index.tsx       # 홈 화면 ("/")
+ ├── about.tsx       # "/about" 페이지
+ ├── profile.tsx     # "/profile" 페이지
+ ├── _layout.tsx     # 루트 레이아웃 설정
+
+
+```
+
+#### _layout.tsx
+
+제일 첫 번쨰로 최상위 루트에서 경로를 지정해줘야 하는데, 이 경로지정 파일은 `_layout.tsx`파일 입니다. 해당 파일애서 아래와 같이 `RootLayout` 컴포넌트를 작성하고, Stack 컴포넌트로 전체 페이지 구성을 작성 해 주면 해당 페이지(home, about, profile)가 생기게 됩니다.
+
+또한 `Stack.Screen`파일에서 `options` Props를 사용하여 title, header-color등 다양한 옵션을 지정할 수 있기 때문에 원활한 사용을 위해서는 반드시 [공식문서](https://docs.expo.dev/router/advanced/stack/)에서 해당 컴포넌트의 사용법을 확인해야 합니다.
+
+<Callout type="info" row={true}>
+**Stack 페이지 라우팅이란?**
+  Expo Router에서 Stack 페이지 라우팅은 기존 react-navigation의 Stack Navigator와 유사하게, 화면을 쌓는(Stack) 방식으로 동작하는 라우팅 방식입니다. 새로운 화면이 열릴 때 기존 화면 위에 쌓이며, 사용자가 뒤로 가기를 하면 이전 화면으로 돌아갑니다.
+</Callout>
+
+```tsx
+import React from "react";
+import { Stack } from "expo-router";
+
+import { StatusBar } from "expo-status-bar";
+
+export default function RootLayout() {
+  return (
+    <>
+    <Stack>
+      <Stack.Screen name="index" options={{ title: 'Home' }} />
+      <Stack.Screen name="about" options={{ title: 'About' }} />
+      <Stack.Screen name="profile" options={{ title: 'Profile' }} />
+    </Stack>
+    </>
+  );
+}
+```
+
+#### 나머지 페이지 스크린 작성
+
+이제 루트 레이아웃에 명시한대로 페이지 파일들을 작성하면 됩니다. 예를들어 about 페이지의 경우 `AboutScreen` 컴포넌트를 만들면 됩니다.
+
+그리고 해당 페이지에서 다른 페이지로 이동을 원할 경우 홈 페이지로 이동시킬 수 있습니다.
+
+```tsx
+import { Text, View, StyleSheet } from "react-native";
+import { Link } from 'expo-router';
+
+export default function AboutScreen() {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.text}>About Page!</Text>
+        <Link href="/" >
+          홈 페이지로!
+        </Link>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#25292e",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  text: {
+    color: "#fff",
+  },
+});
+
+```
+
+#### +not-found.tsx
+
+사용자가 애플리케이션을 사용하다 보면, 잘못된 경로로 이동할 수 있습니다. 이 경우, Expo Router에서는 다양한 `+not-found.tsx` 파일을 제공하여, 사용자에게 해당 페이지가 잘못된 페이지라는 것을 알려줄 수 있습니다.
+
+우선 아래와 같이 NotFoundScreen 컴포넌트를 구성 하고,
+```tsx
+import { View, StyleSheet } from 'react-native';
+import { Link, Stack } from 'expo-router';
+
+export default function NotFoundScreen() {
+  return (
+    <>
+      <Stack.Screen options={{ title: '잘못된 페이지 입니다!' }} />
+      <View style={styles.container}>
+        <Link href="/" style={styles.button}>
+          홈으로 돌아가기!
+        </Link>
+      </View>
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#25292e',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  button: {
+    fontSize: 20,
+    textDecorationLine: 'underline',
+    color: '#fff',
+  },
+});
+
+```
+
+마지막으로 RootLayout에 `not-found`를 등록하면 됩니다.
+
+
+```tsx
+import React from "react";
+import { Stack } from "expo-router";
+
+import { StatusBar } from "expo-status-bar";
+
+export default function RootLayout() {
+  return (
+    <>
+      <Stack>
+        <Stack.Screen name="index" options={{ title: 'Home' }} />
+        <Stack.Screen name="about" options={{ title: 'About' }} />
+        <Stack.Screen name="profile" options={{ title: 'Profile' }} />
+        
+        /* 찾을 수 없는 페이지 등록 */
+        <Stack.Screen name="+not-found" />
+      </Stack>
+    </>
+  );
+}
+```
+
+## 동적 라우팅
+
+Next와 마찬가지로 Expo router에서는 동적 라우팅을 지원합니다. 예를 들어 `id`를 기반으로 사용자의 상세 페이지를 렌더링 해야 한다고 가정 했을 때 `detail/[id].tsx`와 같이 파일을 생성하여 작성해 주면 됩니다.
+
+```powershell
+  /app
+  ├── index.tsx       # 홈 화면 ("/")
+  ├── about.tsx       # "/about" 페이지
+  ├── profile.tsx     # "/profile" 페이지
+  ├── _layout.tsx     # 루트 레이아웃 설정
+  ├── details/
+       ├── index.tsx      # "/details" 페이지
+       ├── [id].tsx       # "/details/:id" 동적 라우트
+```
+
+위의 규칙을 기반으로 다시 RootLayout을 설정해 줍니다.
+
+```tsx
+import React from "react";
+import { Stack } from "expo-router";
+
+import { StatusBar } from "expo-status-bar";
+
+export default function RootLayout() {
+  return (
+    <>
+      <Stack>
+       /* 정적 라우팅 페이지 */
+        <Stack.Screen name="index" options={{ title: 'Home' }} />
+        <Stack.Screen name="about" options={{ title: 'About' }} />
+        <Stack.Screen name="profile" options={{ title: 'Profile' }} />
+        
+        /* 찾을 수 없는 페이지 등록 */
+        <Stack.Screen name="+not-found" />
+
+        /* 동적 라우팅 페이지 */
+        <Stack.Screen name="details/[id]" options={{ title: 'User Profile' }} />
+      </Stack>
+    </>
+  );
+}
+```
+
+그리고 `[id].tsx` 페이지에는 아래와 같이 DetailsScreen 컴포넌트를 구성해 주고, `useLocalSearchParams`로 params를 가져와서 사용해 주면 됩니다.
+
+```tsx
+import { useLocalSearchParams } from 'expo-router';
+import { View, Text, StyleSheet } from 'react-native';
+
+export default function DetailsScreen() {
+  const { id } = useLocalSearchParams();
+
+  // id 값으로 data fetching....
+
+  return (
+    <View style={styles.container}>
+      <Text>해당 유저 아이디! {id} </Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
+```
+
+
+## 프로젝트에 적용하기
+
+저희 팀에서 만들 프로젝트에서는 **바텀 탭(모집. 피드, 쪽지, 마이)을** 이용한 라우팅이 필요했습니다. 따라서 Expo Router에서 제공하는 Tabs를 사용하여 바텀 네비게이션 바를 구현하였습니다.
+
+### app 폴더 구성
+
+Expo router 에서는 **괄호를 이용한 폴더 구조 방식으로 경로를 그룹화** 할 수 있습니다. 따라서 아래처럼 폴더를 구성하였습니다. 물론 실제 프로젝트에서는 더 다양한 라우팅이 있지만 현재는 간단한 설명을 하기 위해 간단하게 tabs 폴더 아래에 4가지의 파일로 구성 하였습니다.
+
+```powershell
+/app
+ ├── _layout.tsx
+ ├──(tabs)
+      ├──index.tsx
+      ├──feed.tsx
+      ├──letter.tsx
+      ├──my.tsx
+```
+
+#### Root Layout
+
+최상위 루트 레이아웃에서는 위에서 설명한 기존 레이아웃 과는 다르게 `not-found`와 `tabs`의 이름으로 스크린을 선언해 줍니다. 
+
+```tsx
+import { Stack } from 'expo-router';
+
+export default function RootLayout() {
+  return (
+    <Stack>
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="+not-found" />
+    </Stack>
+  );
+}
+```
+
+#### Tabs Layout 
+
+그리고 Tabs Layout에는 `(tabs)`폴더 아래에 들어갈 Tab 스크린들을 선언해 줍니다. 
+
+Tabs는 공식 문서에서 제공하는 다양한 Props가 존재하게 되는데 탭 안의 네비게이션 헤더 설정이나, 아이콘 컬러 설정, active 되었을 때 설정등 다양한 옵션들을 props로 전달할 수 있기 때문에,
+
+원활한 사용을 하려면 반드시 [공식문서](https://docs.expo.dev/router/advanced/tabs/)를 활용하시기 바랍니다.
+
+<Callout type="info" row={true}>
+**Tab 방식 라우팅**
+  Expo Router에서 Tabs 네비게이션은 하단 바 형태의 네비게이션을 제공하는 방식입니다. 일반적으로 모바일 앱에서 자주 사용되며, 화면을 전환하면서도 상태를 유지할 수 있는 구조를 제공합니다.
+</Callout>
+
+```tsx
+import { Tabs } from 'expo-router';
+import Ionicons from "@expo/vector-icons/Ionicons";
+
+
+export default function TabLayout() {
+  return (
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: "#ffd33d",
+        headerStyle: {
+          backgroundColor: "#25292e",
+        },
+        headerShadowVisible: false,
+        headerTintColor: "#fff",
+        tabBarStyle: {
+          backgroundColor: "#25292e",
+        },
+      }}
+    >
+
+    /* 다양한 아이콘 설정 가능*/
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: "Home",
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? "home-sharp" : "home-outline"}
+              color={color}
+              size={24}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen name="feed" options={{ title: 'Feed' }} />
+      <Tabs.Screen name="letter" options={{ title: 'Letter' }} />
+      <Tabs.Screen name="my" options={{ title: 'MyPage' }} />
+    </Tabs>
+  );
+}
+```
+
+### 스크린 설정
+
+마지막으로 각 페이지마다 사용할 스크린 컴포넌트를 작성해 주면 하단 탭 설정이 완료 됩니다.
+
+```tsx
+// (tabs)/index.tsx 나머지도 비슷하게 작성
+import { Text, View, StyleSheet } from "react-native";
+import { Link } from 'expo-router';
+
+export default function TabHomeScreen() {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.text}>탭의 홈 입니다!</Text>
+
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#25292e",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  text: {
+    color: "#fff",
+  },
+});
+
+```
+
+## 마치며
+
+이번 글에서는 Expo Router의 기본 사용법부터 Stack 네비게이션, 동적 라우팅, 그리고 Tabs 네비게이션까지 다양한 개념을 살펴보았습니다. 기존의 react-navigation과 비교했을 때, 파일 기반 라우팅을 활용해 더욱 직관적인 네비게이션 구현이 가능하며, Next.js와 유사한 방식으로 페이지를 관리할 수 있다는 점이 Expo Router의 가장 큰 장점입니다.
+
+특히, Stack 네비게이션을 활용한 화면 전환, 동적 라우팅을 통한 유연한 URL 처리, Tabs 네비게이션을 이용한 하단 바 구현 등 다양한 기능을 활용하여 실용적인 네비게이션 구조를 구축할 수 있었습니다.
