@@ -55,7 +55,9 @@ const PostCard: React.FunctionComponent<IPostCardProps> = ({
         <CardTitle className="text-lg">{title}</CardTitle>
       </CardContent>
       <CardFooter className="flex justify-between items-center">
-        <span className="text-primary font-semibold uppercase">{category}</span>
+        <span className="text-primary font-semibold uppercase whitespace-nowrap">
+          {category}
+        </span>
         <time dateTime={date} className="w-full text-right text-sm">
           {date}
         </time>

@@ -1,4 +1,3 @@
-import * as React from "react";
 import { IPost } from "@/types/blog";
 import { MdxComponents } from "@/components/mdx";
 import { MDXRemote } from "next-mdx-remote/rsc";
